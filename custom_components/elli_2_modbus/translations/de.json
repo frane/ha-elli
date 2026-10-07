@@ -1,0 +1,140 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Elli Charger 2 (Modbus TCP)",
+        "description": "Zuerst in der Wallbox-Konfiguration unter „Verbindungen > Modbus-Server“ den Modbus-Server aktivieren (Firmware ab R03.004.045.121).",
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Modbus-ID"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname der Wallbox",
+          "port": "Standard: 502",
+          "unit_id": "Standard: 1"
+        }
+      },
+      "reconfigure": {
+        "title": "Verbindung ändern",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Modbus-ID"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname der Wallbox",
+          "port": "Standard: 502",
+          "unit_id": "Standard: 1"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Keine Verbindung. Ist der Modbus-Server in der Wallbox aktiviert und die Adresse richtig?",
+      "modbus_error": "Die Wallbox antwortet, aber nicht mit den erwarteten Registern. Firmware zu alt oder falsche Modbus-ID?",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "abort": {
+      "already_configured": "Diese Wallbox ist bereits eingerichtet.",
+      "reconfigure_successful": "Verbindung aktualisiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Abfrageintervall"
+        },
+        "data_description": {
+          "scan_interval": "Muss deutlich kürzer sein als der Watchdog-Timeout der Wallbox (Standard 15 s), sonst fällt sie auf den Failsafe-Strom zurück."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "vehicle_connected": {
+        "name": "Fahrzeug verbunden"
+      },
+      "charging": {
+        "name": "Lädt"
+      },
+      "problem": {
+        "name": "Störung"
+      }
+    },
+    "number": {
+      "charging_current": {
+        "name": "Ladestrom"
+      },
+      "failsafe_current": {
+        "name": "Failsafe-Strom"
+      },
+      "watchdog_timeout": {
+        "name": "Watchdog-Timeout"
+      }
+    },
+    "sensor": {
+      "charging_state": {
+        "name": "Ladestatus",
+        "state": {
+          "a1": "Kein Fahrzeug",
+          "a2": "Kein Fahrzeug, bereit",
+          "b1": "Fahrzeug verbunden (gesperrt)",
+          "b2": "Fahrzeug verbunden",
+          "c1": "Ladeanfrage (gesperrt)",
+          "c2": "Lädt",
+          "derating": "Lädt reduziert (Temperatur)",
+          "e": "Fehler E",
+          "f": "Fehler F",
+          "error": "Fehler",
+          "unknown": "Unbekannt"
+        }
+      },
+      "power": {
+        "name": "Ladeleistung"
+      },
+      "energy_total": {
+        "name": "Energie gesamt"
+      },
+      "energy_since_power_on": {
+        "name": "Energie seit Neustart"
+      },
+      "current_limit": {
+        "name": "Aktive Stromgrenze"
+      },
+      "current_l1": {
+        "name": "Strom L1"
+      },
+      "current_l2": {
+        "name": "Strom L2"
+      },
+      "current_l3": {
+        "name": "Strom L3"
+      },
+      "voltage_l1": {
+        "name": "Spannung L1"
+      },
+      "voltage_l2": {
+        "name": "Spannung L2"
+      },
+      "voltage_l3": {
+        "name": "Spannung L3"
+      },
+      "pcb_temperature": {
+        "name": "Platinentemperatur"
+      }
+    },
+    "switch": {
+      "charging_enabled": {
+        "name": "Laden freigegeben"
+      }
+    }
+  },
+  "exceptions": {
+    "failsafe_out_of_range": {
+      "message": "Failsafe-Strom muss 0 (Laden stoppen) oder mindestens {min} A sein."
+    }
+  }
+}

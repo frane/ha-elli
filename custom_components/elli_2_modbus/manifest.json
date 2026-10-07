@@ -1,0 +1,19 @@
+{
+  "domain": "elli_2_modbus",
+  "name": "Elli Charger 2 (Modbus)",
+  "codeowners": [
+    "@frane"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/frane/ha-elli-2-modbus",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/frane/ha-elli-2-modbus/issues",
+  "loggers": [
+    "elli2modbus"
+  ],
+  "requirements": [
+    "elli-2-modbus==0.1.0"
+  ],
+  "version": "0.1.0"
+}

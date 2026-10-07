@@ -1,0 +1,140 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Elli Charger 2 (Modbus TCP)",
+        "description": "First enable the Modbus server in the wallbox configuration under \"Connections > Modbus server\" (firmware R03.004.045.121 or later).",
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Modbus unit ID"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the wallbox",
+          "port": "Default: 502",
+          "unit_id": "Default: 1"
+        }
+      },
+      "reconfigure": {
+        "title": "Change connection",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Modbus unit ID"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the wallbox",
+          "port": "Default: 502",
+          "unit_id": "Default: 1"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect. Is the Modbus server enabled in the wallbox and the address correct?",
+      "modbus_error": "The wallbox answers, but not with the expected registers. Firmware too old or wrong unit ID?",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This wallbox is already configured.",
+      "reconfigure_successful": "Connection updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Polling interval"
+        },
+        "data_description": {
+          "scan_interval": "Must be well below the wallbox watchdog timeout (default 15 s), otherwise it falls back to the failsafe current."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "vehicle_connected": {
+        "name": "Vehicle connected"
+      },
+      "charging": {
+        "name": "Charging"
+      },
+      "problem": {
+        "name": "Problem"
+      }
+    },
+    "number": {
+      "charging_current": {
+        "name": "Charging current"
+      },
+      "failsafe_current": {
+        "name": "Failsafe current"
+      },
+      "watchdog_timeout": {
+        "name": "Watchdog timeout"
+      }
+    },
+    "sensor": {
+      "charging_state": {
+        "name": "Charging state",
+        "state": {
+          "a1": "No vehicle",
+          "a2": "No vehicle, ready",
+          "b1": "Vehicle connected (blocked)",
+          "b2": "Vehicle connected",
+          "c1": "Charging requested (blocked)",
+          "c2": "Charging",
+          "derating": "Charging, derated (temperature)",
+          "e": "Error E",
+          "f": "Fault F",
+          "error": "Error",
+          "unknown": "Unknown"
+        }
+      },
+      "power": {
+        "name": "Charging power"
+      },
+      "energy_total": {
+        "name": "Total energy"
+      },
+      "energy_since_power_on": {
+        "name": "Energy since power on"
+      },
+      "current_limit": {
+        "name": "Active current limit"
+      },
+      "current_l1": {
+        "name": "Current L1"
+      },
+      "current_l2": {
+        "name": "Current L2"
+      },
+      "current_l3": {
+        "name": "Current L3"
+      },
+      "voltage_l1": {
+        "name": "Voltage L1"
+      },
+      "voltage_l2": {
+        "name": "Voltage L2"
+      },
+      "voltage_l3": {
+        "name": "Voltage L3"
+      },
+      "pcb_temperature": {
+        "name": "PCB temperature"
+      }
+    },
+    "switch": {
+      "charging_enabled": {
+        "name": "Charging enabled"
+      }
+    }
+  },
+  "exceptions": {
+    "failsafe_out_of_range": {
+      "message": "Failsafe current must be 0 (stop charging) or at least {min} A."
+    }
+  }
+}
