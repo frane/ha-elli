@@ -23,6 +23,8 @@ async def async_setup_entry(
 class ChargingSwitch(ElliEntity, SwitchEntity):
     """On: register 261 = target current. Off: register 261 = 0."""
 
+    _attr_icon = "mdi:ev-plug-type2"
+
     def __init__(self, coordinator: ElliCoordinator) -> None:
         super().__init__(coordinator, "charging_enabled")
 
