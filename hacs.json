@@ -1,5 +1,5 @@
 {
-  "name": "Elli Charger 2 (Modbus)",
+  "name": "Elli Charger (Modbus, EEBUS)",
   "content_in_root": false,
   "render_readme": true,
   "homeassistant": "2025.2.0"
