@@ -112,7 +112,7 @@ class WatchdogTimeoutNumber(ElliEntity, NumberEntity):
 
 
 class PowerLimitNumber(EebusEntity, NumberEntity):
-    """Charging power limit (EEBUS LPC). Applied while the limit switch is on."""
+    """Charging power limit (EEBUS LPC), 0 pauses. Applied while the limit switch is on."""
 
     _attr_device_class = NumberDeviceClass.POWER
     _attr_native_unit_of_measurement = UnitOfPower.WATT
@@ -122,7 +122,7 @@ class PowerLimitNumber(EebusEntity, NumberEntity):
     def __init__(self, coordinator: EebusCoordinator) -> None:
         super().__init__(coordinator, "power_limit")
         status = coordinator.data
-        self._attr_native_min_value = (status.min_power if status and status.min_power else 0)
+        self._attr_native_min_value = 0  # 0 W pauses charging; the wallbox charges with at least its minimum
         self._attr_native_max_value = (
             status.max_power or status.nominal_max_power if status and (status.max_power or status.nominal_max_power)
             else 22000
@@ -130,7 +130,8 @@ class PowerLimitNumber(EebusEntity, NumberEntity):
 
     @property
     def native_value(self) -> float | None:
-        return self.coordinator.target_power or self.coordinator.default_target()
+        target = self.coordinator.target_power
+        return target if target is not None else self.coordinator.default_target()
 
     async def async_set_native_value(self, value: float) -> None:
         await self.coordinator.async_set_target_power(value)

@@ -94,7 +94,7 @@ async def test_eebus_setup_and_control(hass, elli):
     assert _state(hass, "binary_sensor.elli_wallbox_problem") == "off"
     assert float(_state(hass, "number.elli_wallbox_failsafe_duration")) == 2
     limit = hass.states.get("number.elli_wallbox_charging_power_limit")
-    assert limit.attributes["min"] == 4140 and limit.attributes["max"] == 11040
+    assert limit.attributes["min"] == 0 and limit.attributes["max"] == 11040
     # the Elli Charger 2 reports neither the car nor currents: no such entities
     assert hass.states.get("binary_sensor.elli_wallbox_vehicle_connected") is None
     assert hass.states.get("sensor.elli_wallbox_current_l1") is None

@@ -108,7 +108,8 @@ class EebusCoordinator(DataUpdateCoordinator[ElliStatus]):
 
     async def async_set_limit_active(self, active: bool) -> None:
         if active:
-            await self._call(self.client.set_power_limit(self.target_power or self.default_target()))
+            await self._call(self.client.set_power_limit(
+                self.target_power if self.target_power is not None else self.default_target()))
         else:
             await self._call(self.client.clear_power_limit())
 
