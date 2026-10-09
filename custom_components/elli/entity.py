@@ -1,4 +1,4 @@
-"""Base entity for the Elli Charger 2 (Modbus) integration."""
+"""Base entity for the Elli Charger integration."""
 
 from __future__ import annotations
 

@@ -11,7 +11,7 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTER
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import ServiceValidationError
 
-from custom_components.elli_2_modbus.const import (
+from custom_components.elli.const import (
     CONF_CONNECTION,
     CONF_UNIT_ID,
     CONNECTION_MODBUS,

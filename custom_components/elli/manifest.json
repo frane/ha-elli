@@ -1,6 +1,6 @@
 {
-  "domain": "elli_2_modbus",
-  "name": "Elli Charger (Modbus, EEBUS)",
+  "domain": "elli",
+  "name": "Elli Charger",
   "codeowners": [
     "@frane"
   ],
@@ -8,10 +8,10 @@
   "dependencies": [
     "zeroconf"
   ],
-  "documentation": "https://github.com/frane/ha-elli-2-modbus",
+  "documentation": "https://github.com/frane/ha-elli",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/frane/ha-elli-2-modbus/issues",
+  "issue_tracker": "https://github.com/frane/ha-elli/issues",
   "loggers": [
     "elli2modbus",
     "ellieebus",
@@ -19,7 +19,7 @@
   ],
   "requirements": [
     "elli-2-modbus==0.1.0",
-    "elli-eebus@https://github.com/frane/elli-eebus/archive/b03ad9a37d8fb4c1de896b05e189ccda32e7388e.zip"
+    "elli-eebus@https://github.com/frane/elli-eebus/archive/dbf59c9e54fbcf433dc6aafac11921bdf278915a.zip"
   ],
   "version": "0.1.0",
   "zeroconf": [

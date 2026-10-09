@@ -1,10 +1,10 @@
-"""Constants for the Elli Charger 2 (Modbus) integration."""
+"""Constants for the Elli Charger integration."""
 
 from __future__ import annotations
 
 from typing import Final
 
-DOMAIN: Final = "elli_2_modbus"
+DOMAIN: Final = "elli"
 
 DEFAULT_NAME: Final = "Elli Wallbox"
 DEFAULT_PORT: Final = 502

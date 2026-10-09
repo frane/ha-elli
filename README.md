@@ -1,11 +1,13 @@
-# Elli Charger (Modbus, EEBUS) for Home Assistant
+# Elli Charger for Home Assistant (Modbus, EEBUS)
 
 **English** | [Deutsch](README.de.md)
+
+> Successor of [ha-elli-2-modbus](https://github.com/frane/ha-elli-2-modbus) (Modbus only). To switch: remove the old integration, then install this one and set it up again. Don't run both against the same wallbox.
 
 Local Home Assistant integration for **Elli** wallboxes over **Modbus TCP** or **EEBUS**. No cloud, and the Elli app keeps working.
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=frane&repository=ha-elli-2-modbus&category=integration)
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=frane&repository=ha-elli&category=integration)
 
 The protocol code lives in the libraries [elli-2-modbus](https://github.com/frane/elli-2-modbus) and [elli-eebus](https://github.com/frane/elli-eebus) (on [pyeebus](https://github.com/frane/pyeebus)). Home Assistant installs them automatically.
 
@@ -52,13 +54,13 @@ Optional check from any computer: `pip install elli-2-modbus && elli-2-modbus st
 ### Step 2: Install the integration with HACS
 
 1. In Home Assistant, open **HACS** and click **⋮ (top right) → Custom repositories**. You can also use the "Open in HACS" button above.
-2. Repository: `https://github.com/frane/ha-elli-2-modbus`, Type: **Integration** → **Add**.
+2. Repository: `https://github.com/frane/ha-elli`, Type: **Integration** → **Add**.
 3. Search for **Elli Charger (Modbus, EEBUS)** in HACS → **Download**.
 4. **Restart Home Assistant** (*Settings → System → Restart*).
 
 <details><summary>Without HACS</summary>
 
-Copy `custom_components/elli_2_modbus` into the `custom_components` folder of your Home Assistant configuration and restart.
+Copy `custom_components/elli` into the `custom_components` folder of your Home Assistant configuration and restart.
 </details>
 
 ### Step 3: Add the wallbox

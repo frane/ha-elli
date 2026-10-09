@@ -8,7 +8,7 @@ import pytest
 
 from homeassistant.const import CONF_HOST, CONF_PORT
 
-from custom_components.elli_2_modbus.const import CONF_UNIT_ID, DOMAIN
+from custom_components.elli.const import CONF_UNIT_ID, DOMAIN
 
 
 @pytest.fixture(autouse=True)

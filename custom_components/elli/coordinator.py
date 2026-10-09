@@ -1,4 +1,4 @@
-"""Polling coordinator for the Elli Charger 2 (Modbus) integration."""
+"""Polling coordinator for the Elli Charger integration."""
 
 from __future__ import annotations
 

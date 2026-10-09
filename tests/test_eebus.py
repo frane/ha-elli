@@ -15,19 +15,19 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
-from custom_components.elli_2_modbus.const import (
+from custom_components.elli.const import (
     CONF_CONNECTION,
     CONF_SKI,
     CONNECTION_EEBUS,
     DOMAIN,
 )
-from custom_components.elli_2_modbus.eebus import state_dir
+from custom_components.elli.eebus import state_dir
 
 
 @pytest.fixture(autouse=True)
 def no_zeroconf():
     # no multicast in tests: do not announce, connect directly
-    with patch("custom_components.elli_2_modbus.eebus.async_get_zeroconf", return_value=None):
+    with patch("custom_components.elli.eebus.async_get_zeroconf", return_value=None):
         yield
 
 
@@ -162,7 +162,7 @@ async def test_eebus_already_configured_and_zeroconf(hass, elli):
 
 
 async def test_eebus_pairing_not_done(hass, elli):
-    with patch("custom_components.elli_2_modbus.config_flow.EEBUS_PAIR_TIMEOUT", 1):
+    with patch("custom_components.elli.config_flow.EEBUS_PAIR_TIMEOUT", 1):
         result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "eebus"})
         result = await hass.config_entries.flow.async_configure(
