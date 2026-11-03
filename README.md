@@ -70,7 +70,7 @@ Open the device and set **Failsafe current**. This is what the wallbox does when
 - `0` = stop charging (safe for PV-only charging)
 - `6`–`16` A = keep charging at that current
 
-Keep the polling interval well below the watchdog timeout.
+The wallbox only counts writes, not reads, as Home Assistant talking to it. While the watchdog is on, the integration therefore writes the charging current (or 0 when charging is off) on every poll. Keep the polling interval well below the watchdog timeout.
 
 ## Setup with EEBUS (first generation, or Elli Charger 2 without Modbus)
 
@@ -120,7 +120,7 @@ For PV surplus charging, write an automation that sets *Charging current* and *C
 |---|---|
 | Modbus: "Cannot connect" during setup | Is the Modbus server on? Is the IP correct? Are Home Assistant and the wallbox on the same network? |
 | Modbus: "Wallbox answers, but not with the expected registers" | Firmware older than R03.004.045.121, or wrong Modbus ID |
-| Modbus: charging stops by itself after a while | Watchdog: Home Assistant was unreachable longer than the watchdog timeout, so the failsafe current applies |
+| Modbus: charging stops by itself after a while | Watchdog: Home Assistant was unreachable longer than the watchdog timeout, so the failsafe current applies. Versions before 0.1.1 also tripped it during normal operation; update |
 | Modbus: current is lower than set | The wallbox's internal limits (temperature, load management, §14a) have priority; see *Active current limit* |
 | EEBUS: wallbox not found / home-assistant not listed in the wallbox | Same network (no VLAN in between)? mDNS must pass |
 | EEBUS: limit is not applied, log says "Adding binding failed" | The wallbox still holds the binding of a removed energy manager: restart the wallbox |
