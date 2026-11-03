@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from functools import partial
 import logging
 from pathlib import Path
 from typing import Any
@@ -37,8 +38,11 @@ async def async_get_zeroconf(hass: HomeAssistant) -> Any:
 
 async def async_create_client(hass: HomeAssistant, ski: str, host: str, port: int) -> ElliEebus:
     zc = await async_get_zeroconf(hass)
-    return ElliEebus(ski, state_dir=state_dir(hass, ski), host=host, port=port, local_port=0,
-                     name=EEBUS_NAME, zeroconf=zc, announce=zc is not None)
+    # Reads and creates the certificate and trust files: not in the event loop.
+    return await hass.async_add_executor_job(
+        partial(ElliEebus, ski, state_dir=state_dir(hass, ski), host=host, port=port,
+                local_port=0, name=EEBUS_NAME, zeroconf=zc, announce=zc is not None)
+    )
 
 
 class EebusCoordinator(DataUpdateCoordinator[ElliStatus]):

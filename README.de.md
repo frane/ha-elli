@@ -74,7 +74,7 @@ Die Wallbox zählt nur Schreibzugriffe als Kontakt, keine Lesezugriffe. Solange 
 
 ## Einrichtung mit EEBUS (erste Generation, oder Elli Charger 2 ohne Modbus)
 
-1. **Wallbox hinzufügen:** Home Assistant findet sie im Netz und bietet sie unter *Einstellungen → Geräte & Dienste* (*Entdeckt*) an. Sonst: *Integration hinzufügen →* **Elli Charger** → **EEBUS**, und IP-Adresse, Port `4711` und die SKI der Wallbox eintragen (steht in der Weboberfläche bei den EEBUS-Einstellungen).
+1. **Wallbox hinzufügen:** Home Assistant findet sie im Netz und bietet sie unter *Einstellungen → Geräte & Dienste* (*Entdeckt*) an. Sonst: *Integration hinzufügen →* **Elli Charger** → **EEBUS**, und IP-Adresse, Port `4711` (`4712` bei Wallboxen der ersten Generation wie ID. Charger oder Škoda iV Charger) und die SKI der Wallbox eintragen (steht in der Weboberfläche bei den EEBUS-Einstellungen).
 2. **Koppeln:** Home Assistant zeigt seine eigene SKI. In der Weboberfläche der Wallbox **Verbindungen → HEMS-Verbindung** (*EEBUS-Energiemanager*) öffnen, unter **Gefundene EEBUS-Geräte** „home-assistant“ auswählen und koppeln. Einen Energiemanager, den du nicht mehr nutzt, dort entfernen.
 3. In Home Assistant auf **Absenden** klicken. Die Wallbox verbindet sich innerhalb weniger Sekunden.
 4. **Failsafe:** Im Gerät *Failsafe-Leistung* und *Failsafe-Dauer* setzen. Das tut die Wallbox, wenn Home Assistant weg ist (Standard 22 kW = kein Limit).

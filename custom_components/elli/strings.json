@@ -35,7 +35,7 @@
         },
         "data_description": {
           "host": "IP address or hostname of the wallbox",
-          "port": "Default: 4711",
+          "port": "4711 on the Elli Charger 2, 4712 on first-generation wallboxes (ID. Charger, Škoda iV)",
           "ski": "40 hexadecimal characters"
         }
       },

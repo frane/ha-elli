@@ -74,7 +74,7 @@ The wallbox only counts writes, not reads, as Home Assistant talking to it. Whil
 
 ## Setup with EEBUS (first generation, or Elli Charger 2 without Modbus)
 
-1. **Add the wallbox:** Home Assistant finds it on the network and offers it under *Settings → Devices & services* (*Discovered*). Otherwise: *Add integration →* **Elli Charger** → **EEBUS**, and enter the IP address, port `4711` and the wallbox's SKI (shown in its web interface under the EEBUS settings).
+1. **Add the wallbox:** Home Assistant finds it on the network and offers it under *Settings → Devices & services* (*Discovered*). Otherwise: *Add integration →* **Elli Charger** → **EEBUS**, and enter the IP address, port `4711` (`4712` on first-generation wallboxes such as the ID. Charger or Škoda iV Charger) and the wallbox's SKI (shown in its web interface under the EEBUS settings).
 2. **Pair:** Home Assistant shows its own SKI. In the wallbox web interface, open **Connections → HEMS connection** (*EEBUS-Energiemanager*), select **home-assistant** under **Found EEBUS devices** and pair. Remove an energy manager you no longer use there.
 3. Click **Submit** in Home Assistant. The wallbox connects within a few seconds.
 4. **Failsafe:** set *Failsafe power* and *Failsafe duration* on the device. That is what the wallbox does when Home Assistant is gone (default 22 kW = no limit).

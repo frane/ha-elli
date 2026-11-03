@@ -185,9 +185,11 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
                 self.hass, self._eebus[CONF_SKI], self._eebus[CONF_HOST], self._eebus[CONF_PORT]
             )
             await self._client.start()
+        # Kept locally: the flow may be removed (and the client stopped) while we wait.
+        client = self._client
         if user_input is not None:
             try:
-                await self._client.wait_connected(EEBUS_PAIR_TIMEOUT)
+                await client.wait_connected(EEBUS_PAIR_TIMEOUT)
             except TimeoutError:
                 errors["base"] = "not_paired"
             else:
@@ -198,7 +200,7 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="pair",
             errors=errors,
             description_placeholders={
-                "our_ski": self._client.our_ski,
+                "our_ski": client.our_ski,
                 "our_name": EEBUS_NAME,
                 "host": self._eebus[CONF_HOST],
             },
