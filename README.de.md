@@ -107,9 +107,9 @@ Für PV-Überschussladen eine Automation schreiben, die *Ladestrom* und *Laden f
 | Ladeleistung, Aktives Leistungslimit, Betriebszustand | Sensoren |
 | Problem, EEBUS verbunden | Binärsensoren |
 | Failsafe-Leistung, Failsafe-Dauer | Konfiguration (nur Elli Charger 2) |
-| Fahrzeug verbunden, Ladezustand, Ströme L1–L3, Energie des Ladevorgangs | erste Generation; sie erscheinen, sobald einmal ein Fahrzeug angesteckt war |
+| Fahrzeug verbunden, Lädt, Ladezustand, Ströme L1–L3, Energie des Ladevorgangs | erste Generation; sie erscheinen, sobald einmal ein Fahrzeug angesteckt war |
 
-Die erste Generation meldet Ströme, aber keine Leistung; *Ladeleistung* wird deshalb aus den Strömen berechnet (× 230 V). Ihr Limit hängt am Fahrzeug und wird bei jedem Anstecken zurückgesetzt: Die Integration schreibt es jedes Mal neu (das Maximum, solange *Leistungslimit* aus ist), damit die Wallbox nicht mehr mit 6 A startet.
+Die erste Generation meldet Ströme, aber weder Leistung noch Energie; *Ladeleistung* wird deshalb aus den Strömen berechnet (× 230 V), für kWh einen *Integral*-Helfer darauf anlegen. *Ladezustand* steht schon auf `active`, sobald das Auto angesteckt ist, auch während es auf die Freigabe wartet: für „Strom fließt“ *Lädt* verwenden. Ihr Limit hängt am Fahrzeug und wird bei jedem Anstecken zurückgesetzt: Die Integration schreibt es jedes Mal neu (das Maximum, solange *Leistungslimit* aus ist), damit die Wallbox nicht mehr mit 6 A startet.
 
 ## Grenzen der Firmware
 

@@ -220,11 +220,14 @@ async def test_eebus_first_generation(hass, socket_enabled):
         evse.limits["obligation"] = [6, 6, 6]
 
         await _wait(lambda: evse.limits["obligation"] == [16, 16, 16])  # unrestricted
+        await _wait(lambda: hass.states.get("binary_sensor.elli_wallbox_charging") is not None)
+        assert _state(hass, "binary_sensor.elli_wallbox_charging") == "off", "plugged in, no current yet"
         evse.set_charging(10, 1200)
         await _wait(lambda: hass.states.get("sensor.elli_wallbox_energy") is not None
                     and _state(hass, "sensor.elli_wallbox_charging_power") == "6900.0")
         assert _state(hass, "binary_sensor.elli_wallbox_vehicle_connected") == "on"
         assert float(_state(hass, "sensor.elli_wallbox_current_l1")) == 10
+        assert _state(hass, "binary_sensor.elli_wallbox_charging") == "on"
 
         # the limit switch stays on while a limit is written
         await hass.services.async_call("number", "set_value",
@@ -241,6 +244,15 @@ async def test_eebus_first_generation(hass, socket_enabled):
         assert diagnostics["status"]["profile"] == "opev"
         assert {e["type"] for e in diagnostics["eebus"]["entities"]} >= {"EVSE", "EV"}
         assert diagnostics["entry"][CONF_SKI] == "**REDACTED**"
+
+        # failsafe entities left over from 0.1.1 are removed
+        from homeassistant.helpers import entity_registry as er
+        registry = er.async_get(hass)
+        stale = registry.async_get_or_create("number", DOMAIN, f"{entry.unique_id}_failsafe_power",
+                                             config_entry=entry)
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        await hass.async_block_till_done()
+        assert registry.async_get(stale.entity_id) is None
 
         assert await hass.config_entries.async_unload(entry.entry_id)
         await hass.async_block_till_done()

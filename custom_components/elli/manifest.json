@@ -19,9 +19,9 @@
   ],
   "requirements": [
     "elli-2-modbus==0.1.0",
-    "elli-eebus@https://github.com/frane/elli-eebus/archive/db10400d3cfbd31efddf733f60368e0e9a42f80b.zip"
+    "elli-eebus@https://github.com/frane/elli-eebus/archive/66a684d31639962798dc1c5f582f1533cd66208b.zip"
   ],
-  "version": "0.1.2",
+  "version": "0.1.3",
   "zeroconf": [
     {
       "type": "_ship._tcp.local.",

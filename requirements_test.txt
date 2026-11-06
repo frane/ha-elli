@@ -1,4 +1,4 @@
 pytest-homeassistant-custom-component
 # Until the libraries are on PyPI, install them from GitHub (same commit as manifest.json).
 elli-2-modbus @ git+https://github.com/frane/elli-2-modbus
-elli-eebus @ https://github.com/frane/elli-eebus/archive/db10400d3cfbd31efddf733f60368e0e9a42f80b.zip
+elli-eebus @ https://github.com/frane/elli-eebus/archive/66a684d31639962798dc1c5f582f1533cd66208b.zip

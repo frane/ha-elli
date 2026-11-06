@@ -71,6 +71,13 @@ EEBUS_BINARY_SENSORS = (
         optional=True,
         value_fn=lambda d: d.vehicle_connected,
     ),
+    EebusBinaryDescription(
+        # current flowing; "Charge state" is already "active" while the car waits to start
+        key="charging",
+        device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+        optional=True,
+        value_fn=lambda d: d.charging,
+    ),
 )
 
 

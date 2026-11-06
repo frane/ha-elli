@@ -107,9 +107,9 @@ For PV surplus charging, write an automation that sets *Charging current* and *C
 | Charging power, Active power limit, Operating state | sensors |
 | Problem, EEBUS connected | binary sensors |
 | Failsafe power, Failsafe duration | configuration (Elli Charger 2 only) |
-| Vehicle connected, Charge state, currents L1–L3, energy of the session | first generation; they appear once a vehicle has been plugged in |
+| Vehicle connected, Charging, Charge state, currents L1–L3, energy of the session | first generation; they appear once a vehicle has been plugged in |
 
-The first generation reports currents but no power, so *Charging power* is computed from the currents (× 230 V). Its limit lives on the vehicle and is reset on every plug-in: the integration writes it again each time (the maximum while *Power limit* is off), so the wallbox no longer starts at 6 A.
+The first generation reports currents but no power and no energy, so *Charging power* is computed from the currents (× 230 V); for kWh, add an *Integral* helper on it. *Charge state* turns `active` as soon as the car is plugged in, even while it waits for authorization: use *Charging* for "current is flowing". Its limit lives on the vehicle and is reset on every plug-in: the integration writes it again each time (the maximum while *Power limit* is off), so the wallbox no longer starts at 6 A.
 
 ## Firmware limits
 

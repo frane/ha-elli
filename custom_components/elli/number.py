@@ -6,6 +6,7 @@ from homeassistant.components.number import NumberDeviceClass, NumberEntity, Num
 from homeassistant.const import EntityCategory, UnitOfElectricCurrent, UnitOfPower, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN, WATCHDOG_MAX_SECONDS
@@ -23,8 +24,13 @@ async def async_setup_entry(
     if isinstance(coordinator, EebusCoordinator):
         entities: list[NumberEntity] = [PowerLimitNumber(coordinator)]
         if coordinator.data is None or coordinator.data.profile != "opev":
-            # the first generation has no failsafe limit
             entities += [FailsafePowerNumber(coordinator), FailsafeDurationNumber(coordinator)]
+        else:
+            # The first generation has no failsafe limit; drop the ones 0.1.1 created.
+            registry = er.async_get(hass)
+            for key in ("failsafe_power", "failsafe_duration"):
+                if entity_id := registry.async_get_entity_id("number", DOMAIN, f"{entry.unique_id}_{key}"):
+                    registry.async_remove(entity_id)
         async_add_entities(entities)
         return
     async_add_entities(
