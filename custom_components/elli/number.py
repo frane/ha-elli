@@ -21,13 +21,11 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     if isinstance(coordinator, EebusCoordinator):
-        async_add_entities(
-            [
-                PowerLimitNumber(coordinator),
-                FailsafePowerNumber(coordinator),
-                FailsafeDurationNumber(coordinator),
-            ]
-        )
+        entities: list[NumberEntity] = [PowerLimitNumber(coordinator)]
+        if coordinator.data is None or coordinator.data.profile != "opev":
+            # the first generation has no failsafe limit
+            entities += [FailsafePowerNumber(coordinator), FailsafeDurationNumber(coordinator)]
+        async_add_entities(entities)
         return
     async_add_entities(
         [

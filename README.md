@@ -106,8 +106,10 @@ For PV surplus charging, write an automation that sets *Charging current* and *C
 | Power limit | switch (on = limit applies) |
 | Charging power, Active power limit, Operating state | sensors |
 | Problem, EEBUS connected | binary sensors |
-| Failsafe power, Failsafe duration | configuration |
-| Vehicle connected, currents L1–L3, energy of the session | only if the wallbox reports the vehicle (first generation) |
+| Failsafe power, Failsafe duration | configuration (Elli Charger 2 only) |
+| Vehicle connected, Charge state, currents L1–L3, energy of the session | first generation; they appear once a vehicle has been plugged in |
+
+The first generation reports currents but no power, so *Charging power* is computed from the currents (× 230 V). Its limit lives on the vehicle and is reset on every plug-in: the integration writes it again each time (the maximum while *Power limit* is off), so the wallbox no longer starts at 6 A.
 
 ## Firmware limits
 
@@ -124,6 +126,8 @@ For PV surplus charging, write an automation that sets *Charging current* and *C
 | Modbus: current is lower than set | The wallbox's internal limits (temperature, load management, §14a) have priority; see *Active current limit* |
 | EEBUS: wallbox not found / home-assistant not listed in the wallbox | Same network (no VLAN in between)? mDNS must pass |
 | EEBUS: limit is not applied, log says "Adding binding failed" | The wallbox still holds the binding of a removed energy manager: restart the wallbox |
+| EEBUS: first generation keeps its port closed after a Home Assistant restart | Firmware: power-cycle the wallbox |
+| Anything else | Attach the diagnostics to the issue: *Settings → Devices & services → Elli Charger → ⋮ → Download diagnostics*. They contain what the wallbox reports over EEBUS, without serial numbers and SKIs |
 
 ## Development
 

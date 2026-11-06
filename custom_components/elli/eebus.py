@@ -14,7 +14,7 @@ from pyeebus.usecases import DataNotAvailable
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
@@ -119,6 +119,28 @@ class EebusCoordinator(DataUpdateCoordinator[ElliStatus]):
 
     async def async_set_failsafe(self, watts: float | None = None, seconds: float | None = None) -> None:
         await self._call(self.client.set_failsafe(watts, seconds))
+
+
+def add_when_reported(coordinator: EebusCoordinator, entry: ConfigEntry, async_add_entities,
+                      descriptions, factory) -> None:
+    """Add the entities, the optional ones as soon as the wallbox reports their value.
+
+    The first generation reports the vehicle, its currents and energy only while a car is
+    plugged in, which need not be the case when Home Assistant starts (ha-elli #3).
+    """
+    added: set[str] = set()
+
+    @callback
+    def add_new() -> None:
+        status = coordinator.data
+        new = [d for d in descriptions if d.key not in added
+               and (not d.optional or (status is not None and d.value_fn(status) is not None))]
+        if new:
+            added.update(d.key for d in new)
+            async_add_entities(factory(coordinator, d) for d in new)
+
+    add_new()
+    entry.async_on_unload(coordinator.async_add_listener(add_new))
 
 
 class EebusEntity(CoordinatorEntity[EebusCoordinator]):

@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import ElliConfigEntry, ElliCoordinator
-from .eebus import EebusCoordinator, EebusEntity
+from .eebus import EebusCoordinator, EebusEntity, add_when_reported
 from .entity import ElliEntity
 
 
@@ -81,12 +81,7 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     if isinstance(coordinator, EebusCoordinator):
-        status = coordinator.data
-        async_add_entities(
-            EebusBinarySensor(coordinator, d)
-            for d in EEBUS_BINARY_SENSORS
-            if not d.optional or (status is not None and d.value_fn(status) is not None)
-        )
+        add_when_reported(coordinator, entry, async_add_entities, EEBUS_BINARY_SENSORS, EebusBinarySensor)
         return
     async_add_entities(ElliBinarySensor(coordinator, d) for d in BINARY_SENSORS)
 

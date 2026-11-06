@@ -173,3 +173,76 @@ async def test_eebus_pairing_not_done(hass, elli):
         assert result["type"] is FlowResultType.FORM and result["errors"] == {"base": "not_paired"}
         hass.config_entries.flow.async_abort(result["flow_id"])
         await hass.async_block_till_done()
+
+
+async def test_eebus_first_generation(hass, socket_enabled):
+    """ha-elli #3: a first-generation wallbox, set up while no car is plugged in."""
+    from pyeebus.simulator import SimulatedEVSE
+    from pyeebus.spine import Role
+
+    from custom_components.elli.diagnostics import async_get_config_entry_diagnostics
+
+    evse = SimulatedEVSE(Identity.create("gen1"), port=0, announce=False, discover=False, host="127.0.0.1")
+    await evse.start()
+    try:
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "eebus"})
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_NAME: "Elli Wallbox", CONF_HOST: "127.0.0.1", CONF_PORT: evse.service.node.port,
+             CONF_SKI: evse.service.ski},
+        )
+        assert result["step_id"] == "pair"
+        cert = (state_dir(hass, evse.service.ski) / "cert.pem").read_bytes()
+        evse.service.trust(result["description_placeholders"]["our_ski"], cert)
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+        entry = result["result"]
+        await hass.async_block_till_done()
+        await _wait(lambda: hass.states.get("binary_sensor.elli_wallbox_vehicle_connected") is not None)
+        assert _state(hass, "binary_sensor.elli_wallbox_vehicle_connected") == "off"
+        assert _state(hass, "sensor.elli_wallbox_charge_state") == "unplugged"
+        # no failsafe limit on the first generation
+        assert hass.states.get("number.elli_wallbox_failsafe_power") is None
+
+        # The car comes later. Like the real wallbox, it starts at 6 A and reports no power.
+        evse.plug_in()
+        meas = evse.ev.feature("Measurement", Role.SERVER)
+        descs = meas.data["measurementDescriptionListData"]["measurementDescriptionData"]
+        meas.data["measurementDescriptionListData"]["measurementDescriptionData"] = [
+            d for d in descs if d["scopeType"] != "acPower"]
+        plain = evse._measurements
+        evse._measurements = lambda c, e: [m for m in plain(c, e) if not 4 <= m["measurementId"] <= 6]
+        meas.data["measurementListData"] = {"measurementData": evse._measurements(0.0, 0.0)}
+        for item in evse.ev.feature("LoadControl", Role.SERVER).data["loadControlLimitListData"][
+                "loadControlLimitData"]:
+            if item["limitId"] <= 3:
+                item.update(isLimitActive=True, value={"number": 6, "scale": 0})
+        evse.limits["obligation"] = [6, 6, 6]
+
+        await _wait(lambda: evse.limits["obligation"] == [16, 16, 16])  # unrestricted
+        evse.set_charging(10, 1200)
+        await _wait(lambda: hass.states.get("sensor.elli_wallbox_energy") is not None
+                    and _state(hass, "sensor.elli_wallbox_charging_power") == "6900.0")
+        assert _state(hass, "binary_sensor.elli_wallbox_vehicle_connected") == "on"
+        assert float(_state(hass, "sensor.elli_wallbox_current_l1")) == 10
+
+        # the limit switch stays on while a limit is written
+        await hass.services.async_call("number", "set_value",
+                                       {"entity_id": "number.elli_wallbox_charging_power_limit", "value": 11000},
+                                       blocking=True)
+        await hass.services.async_call("switch", "turn_on", {"entity_id": "switch.elli_wallbox_power_limit"},
+                                       blocking=True)
+        assert evse.limits["obligation"] == [pytest.approx(15.9, abs=0.1)] * 3
+        await _wait(lambda: _state(hass, "switch.elli_wallbox_power_limit") == "on")
+        await asyncio.sleep(0.3)
+        assert _state(hass, "switch.elli_wallbox_power_limit") == "on"
+
+        diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+        assert diagnostics["status"]["profile"] == "opev"
+        assert {e["type"] for e in diagnostics["eebus"]["entities"]} >= {"EVSE", "EV"}
+        assert diagnostics["entry"][CONF_SKI] == "**REDACTED**"
+
+        assert await hass.config_entries.async_unload(entry.entry_id)
+        await hass.async_block_till_done()
+    finally:
+        await evse.stop()

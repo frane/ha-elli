@@ -106,8 +106,10 @@ Für PV-Überschussladen eine Automation schreiben, die *Ladestrom* und *Laden f
 | Leistungslimit | Schalter (an = Limit gilt) |
 | Ladeleistung, Aktives Leistungslimit, Betriebszustand | Sensoren |
 | Problem, EEBUS verbunden | Binärsensoren |
-| Failsafe-Leistung, Failsafe-Dauer | Konfiguration |
-| Fahrzeug verbunden, Ströme L1–L3, Energie des Ladevorgangs | nur wenn die Wallbox das Fahrzeug meldet (erste Generation) |
+| Failsafe-Leistung, Failsafe-Dauer | Konfiguration (nur Elli Charger 2) |
+| Fahrzeug verbunden, Ladezustand, Ströme L1–L3, Energie des Ladevorgangs | erste Generation; sie erscheinen, sobald einmal ein Fahrzeug angesteckt war |
+
+Die erste Generation meldet Ströme, aber keine Leistung; *Ladeleistung* wird deshalb aus den Strömen berechnet (× 230 V). Ihr Limit hängt am Fahrzeug und wird bei jedem Anstecken zurückgesetzt: Die Integration schreibt es jedes Mal neu (das Maximum, solange *Leistungslimit* aus ist), damit die Wallbox nicht mehr mit 6 A startet.
 
 ## Grenzen der Firmware
 
@@ -124,6 +126,8 @@ Für PV-Überschussladen eine Automation schreiben, die *Ladestrom* und *Laden f
 | Modbus: Strom niedriger als eingestellt | Die internen Grenzen der Wallbox (Temperatur, Lastmanagement, §14a) haben Vorrang; siehe *Aktive Stromgrenze* |
 | EEBUS: Wallbox nicht gefunden / „home-assistant“ taucht in der Wallbox nicht auf | Gleiches Netz (kein VLAN dazwischen)? mDNS muss durchkommen |
 | EEBUS: Limit wird nicht übernommen, im Log steht „Adding binding failed“ | Die Wallbox hält noch die Bindung eines entfernten Energiemanagers: Wallbox neu starten |
+| EEBUS: erste Generation hält nach einem Neustart von Home Assistant ihren Port zu | Firmware: Wallbox stromlos machen |
+| Alles andere | Die Diagnosedaten ans Issue hängen: *Einstellungen → Geräte & Dienste → Elli Charger → ⋮ → Diagnosedaten herunterladen*. Sie enthalten, was die Wallbox über EEBUS meldet, ohne Seriennummern und SKIs |
 
 ## Entwicklung
 
