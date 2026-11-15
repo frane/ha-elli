@@ -127,6 +127,7 @@ The first generation reports currents but no power and no energy, so *Charging p
 | EEBUS: wallbox not found / home-assistant not listed in the wallbox | Same network (no VLAN in between)? mDNS must pass |
 | EEBUS: limit is not applied, log says "Adding binding failed" | The wallbox still holds the binding of a removed energy manager: restart the wallbox |
 | EEBUS: first generation keeps its port closed after a Home Assistant restart | Firmware: power-cycle the wallbox |
+| EEBUS: first generation shows no vehicle although one is charging | It only reports a car that was plugged in while EEBUS was connected: unplug and plug in again |
 | Anything else | Attach the diagnostics to the issue: *Settings → Devices & services → Elli Charger → ⋮ → Download diagnostics*. They contain what the wallbox reports over EEBUS, without serial numbers and SKIs |
 
 ## Development

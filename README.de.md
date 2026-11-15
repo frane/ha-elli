@@ -127,6 +127,7 @@ Die erste Generation meldet Ströme, aber weder Leistung noch Energie; *Ladeleis
 | EEBUS: Wallbox nicht gefunden / „home-assistant“ taucht in der Wallbox nicht auf | Gleiches Netz (kein VLAN dazwischen)? mDNS muss durchkommen |
 | EEBUS: Limit wird nicht übernommen, im Log steht „Adding binding failed“ | Die Wallbox hält noch die Bindung eines entfernten Energiemanagers: Wallbox neu starten |
 | EEBUS: erste Generation hält nach einem Neustart von Home Assistant ihren Port zu | Firmware: Wallbox stromlos machen |
+| EEBUS: erste Generation zeigt kein Fahrzeug, obwohl es lädt | Sie meldet nur Autos, die bei bestehender EEBUS-Verbindung angesteckt wurden: ab- und wieder anstecken |
 | Alles andere | Die Diagnosedaten ans Issue hängen: *Einstellungen → Geräte & Dienste → Elli Charger → ⋮ → Diagnosedaten herunterladen*. Sie enthalten, was die Wallbox über EEBUS meldet, ohne Seriennummern und SKIs |
 
 ## Entwicklung
