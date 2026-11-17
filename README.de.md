@@ -25,10 +25,13 @@ Der Protokoll-Code steckt in den Bibliotheken [elli-2-modbus](https://github.com
 
 ## Installation (HACS)
 
-1. In Home Assistant **HACS** öffnen → **⋮ (oben rechts) → Benutzerdefinierte Repositories**. Alternativ den Button „In HACS öffnen“ oben nutzen.
-2. Repository: `https://github.com/frane/ha-elli`, Typ: **Integration** → **Hinzufügen**.
-3. In HACS nach **Elli Charger** suchen → **Herunterladen**.
-4. **Home Assistant neu starten** (*Einstellungen → System → Neu starten*).
+1. In Home Assistant **HACS** öffnen, nach **Elli Charger** suchen → **Herunterladen**. Der Button „In HACS öffnen“ oben führt direkt dorthin.
+2. **Home Assistant neu starten** (*Einstellungen → System → Neu starten*).
+
+<details><summary>In HACS nicht gefunden?</summary>
+
+Ältere HACS-Versionen kennen es nur als benutzerdefiniertes Repository: **⋮ (oben rechts) → Benutzerdefinierte Repositories**, Repository `https://github.com/frane/ha-elli`, Typ **Integration** → **Hinzufügen**, dann weiter mit Schritt 1.
+</details>
 
 <details><summary>Ohne HACS</summary>
 
