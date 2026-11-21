@@ -8,8 +8,6 @@ Control your **Elli** wallbox from Home Assistant, locally, without the cloud. T
 
 ## What is available where
 
-The **Elli Charger 2** (with "2" in the name, also the Volkswagen, Škoda and CUPRA versions) speaks Modbus and EEBUS. The **first generation** (Elli Charger Connect / Pro, VW ID. Charger, Škoda iV Charger, CUPRA) speaks only EEBUS.
-
 | | Charger 2 · Modbus | Charger 2 · EEBUS | 1st gen · EEBUS |
 |---|---|---|---|
 | Start / stop charging | ✅ switch | ✅ limit 0 W | ✅ limit 0 W |
@@ -26,6 +24,8 @@ The **Elli Charger 2** (with "2" in the name, also the Volkswagen, Škoda and CU
 | If Home Assistant is gone | failsafe current | failsafe power and duration | – |
 | Updates | every 5 s (adjustable) | as soon as something changes | as soon as something changes |
 | On the wallbox | turn on the Modbus server | pair | pair |
+
+1st gen: Elli Charger Connect / Pro, VW ID. Charger, Škoda iV Charger.
 
 All entities: [docs/features.md](https://github.com/frane/ha-elli/blob/main/docs/features.md).
 
