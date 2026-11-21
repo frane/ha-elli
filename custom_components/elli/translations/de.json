@@ -51,6 +51,10 @@
           "zeroconf_confirm": "EEBUS"
         }
       },
+      "enable_modbus": {
+        "title": "Modbus an der Wallbox einschalten",
+        "description": "Die Wallbox unter {host} antwortet noch nicht auf Modbus. An der Wallbox:\n\n1. [https://{host}](https://{host}) öffnen, die Zertifikatswarnung bestätigen und als **Service User** anmelden (Passwort auf der Zugangsdatenkarte).\n2. **Software-Update:** Firmware R03.004.045.121 oder neuer.\n3. **Verbindungen → Modbus-Server:** an.\n\nDann auf Absenden klicken."
+      },
       "zeroconf_modbus": {
         "title": "Elli Charger 2 (Modbus TCP)",
         "description": "Wallbox unter {host} über Modbus TCP hinzufügen?",
@@ -67,7 +71,7 @@
       },
       "pair": {
         "title": "Mit der Wallbox koppeln",
-        "description": "In der Weboberfläche der Wallbox ({host}) „EEBUS-Energiemanager“ öffnen. Unter „Gefundene EEBUS-Geräte“ **{our_name}** (SKI {our_ski}) auswählen und koppeln. Danach auf Absenden drücken."
+        "description": "In der Weboberfläche der Wallbox ([https://{host}](https://{host})) „EEBUS-Energiemanager“ öffnen. Unter „Gefundene EEBUS-Geräte“ **{our_name}** (SKI {our_ski}) auswählen und koppeln. Danach auf Absenden drücken."
       },
       "reconfigure": {
         "title": "Verbindung ändern",
@@ -89,7 +93,8 @@
       "modbus_error": "Die Wallbox antwortet, aber nicht mit den erwarteten Registern. Firmware zu alt oder falsche Modbus-ID?",
       "unknown": "Unerwarteter Fehler",
       "invalid_ski": "Die SKI muss aus 40 Hexadezimalzeichen bestehen.",
-      "not_paired": "Die Wallbox hat die Verbindung noch nicht angenommen. Gekoppelt? Dann nochmal versuchen."
+      "not_paired": "Die Wallbox hat die Verbindung noch nicht angenommen. Gekoppelt? Dann nochmal versuchen.",
+      "modbus_off": "Modbus antwortet noch nicht. Ist der Modbus-Server an und die Firmware aktuell?"
     },
     "abort": {
       "already_configured": "Diese Wallbox ist bereits eingerichtet.",

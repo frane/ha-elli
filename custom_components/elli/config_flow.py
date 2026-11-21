@@ -25,6 +25,7 @@ from .const import (
     CONNECTION_EEBUS,
     CONNECTION_MODBUS,
     DEFAULT_EEBUS_PORT,
+    FIRST_GEN_EEBUS_PORT,
     EEBUS_NAME,
     EEBUS_PAIR_TIMEOUT,
     DEFAULT_NAME,
@@ -120,6 +121,7 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
         self._eebus: dict[str, Any] = {}
         self._modbus: dict[str, Any] = {}
         self._found: list[ShipService] = []
+        self._modbus_ok = False
         self._client: ElliEebus | None = None
 
     async def async_step_user(
@@ -237,9 +239,11 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             CONF_SKI: ski,
         }
         self.context["title_placeholders"] = {"name": brand.capitalize()}
-        # An Elli Charger 2 with the Modbus server on answers on the same host: offer both.
+        # One Modbus probe per discovered wallbox. An Elli Charger 2 offers both connections;
+        # the first generation (SHIP port 4712) has no Modbus server.
         self._modbus = {CONF_HOST: host, CONF_PORT: DEFAULT_PORT, CONF_UNIT_ID: DEFAULT_UNIT_ID}
-        if await _validate(self._modbus) is None:
+        self._modbus_ok = await _validate(self._modbus) is None
+        if self._modbus_ok or port != FIRST_GEN_EEBUS_PORT:
             return await self.async_step_zeroconf_menu()
         return await self.async_step_zeroconf_confirm()
 
@@ -252,9 +256,27 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"host": self._modbus[CONF_HOST]},
         )
 
+    async def async_step_enable_modbus(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Guide the user to turn on the Modbus server, then check again."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if await _validate(self._modbus) is None:
+                self._modbus_ok = True
+                return await self.async_step_zeroconf_modbus()
+            errors["base"] = "modbus_off"
+        return self.async_show_form(
+            step_id="enable_modbus",
+            description_placeholders={"host": self._modbus[CONF_HOST]},
+            errors=errors,
+        )
+
     async def async_step_zeroconf_modbus(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        if not self._modbus_ok:
+            return await self.async_step_enable_modbus()
         errors: dict[str, str] = {}
         if user_input is not None:
             await self.async_set_unique_id(_unique_id(self._modbus), raise_on_progress=False)

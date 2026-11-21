@@ -146,6 +146,9 @@ async def test_eebus_already_configured_and_zeroconf(hass, elli):
     )
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF},
                                                        data=info)
+    # no Modbus on this host: a wallbox that is not first generation still gets the choice
+    assert result["type"] is FlowResultType.MENU and result["step_id"] == "zeroconf_menu"
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "zeroconf_confirm"})
     assert result["type"] is FlowResultType.FORM and result["step_id"] == "zeroconf_confirm"
     result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_NAME: "Garage"})
     result = await _pair(hass, elli, result)

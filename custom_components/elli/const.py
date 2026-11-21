@@ -25,6 +25,7 @@ CONNECTION_MODBUS: Final = "modbus"
 CONNECTION_EEBUS: Final = "eebus"
 CONF_SKI: Final = "ski"
 DEFAULT_EEBUS_PORT: Final = 4711
+FIRST_GEN_EEBUS_PORT: Final = 4712  # SHIP port of the first generation (no Modbus)
 EEBUS_NAME: Final = "home-assistant"  # how we appear in the wallbox's list of EEBUS devices
 EEBUS_PAIR_TIMEOUT: Final = 30  # s to wait for the wallbox after the user paired
 EEBUS_SETUP_WAIT: Final = 15  # s to wait for the first data when the entry is set up

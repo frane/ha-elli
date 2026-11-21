@@ -22,10 +22,10 @@ def _service(host: str = "127.0.0.1") -> ShipService:
                        host="wallbox.local", addresses=[host], port=4711, brand="elli", model="Charger 2")
 
 
-def _zeroconf(host: str = "127.0.0.1") -> ZeroconfServiceInfo:
+def _zeroconf(host: str = "127.0.0.1", port: int = 4711) -> ZeroconfServiceInfo:
     return ZeroconfServiceInfo(
         ip_address=ip_address(host), ip_addresses=[ip_address(host)], hostname="wallbox.local.",
-        name="Elli-Wallbox._ship._tcp.local.", port=4711, type="_ship._tcp.local.",
+        name="Elli-Wallbox._ship._tcp.local.", port=port, type="_ship._tcp.local.",
         properties={"txtvers": "1", "id": "Elli-Wallbox-1", "ski": SKI, "brand": "elli", "register": "false"},
     )
 
@@ -69,15 +69,43 @@ async def test_manual_setup_when_nothing_is_found(hass):
     assert result["menu_options"] == ["modbus", "eebus"]
 
 
-async def test_zeroconf_without_modbus_goes_to_eebus(hass, socket_enabled):
-    with patch("custom_components.elli.config_flow._validate", return_value="cannot_connect"):
+async def test_first_generation_goes_to_eebus(hass, socket_enabled):
+    with patch("custom_components.elli.config_flow._validate", return_value="cannot_connect") as probe:
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=_zeroconf(port=4712))
+    assert result["type"] is FlowResultType.FORM and result["step_id"] == "zeroconf_confirm"
+    assert probe.call_count == 1, "one Modbus probe per discovery"
+
+
+async def test_charger_2_with_modbus_off_gets_guidance(hass, sim):
+    _, port = sim
+    from custom_components.elli import config_flow
+
+    real, answers = config_flow._validate, iter(["cannot_connect", "cannot_connect"])
+
+    async def probe(data):
+        return next(answers, None) or await real(data)
+
+    with patch("custom_components.elli.config_flow._validate", side_effect=probe), \
+            patch("custom_components.elli.config_flow.DEFAULT_PORT", port):
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=_zeroconf())
-    assert result["type"] is FlowResultType.FORM and result["step_id"] == "zeroconf_confirm"
+        assert result["type"] is FlowResultType.MENU and result["step_id"] == "zeroconf_menu"
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "zeroconf_modbus"})
+        assert result["type"] is FlowResultType.FORM and result["step_id"] == "enable_modbus"
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+        assert result["errors"] == {"base": "modbus_off"}, "still off"
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+        assert result["type"] is FlowResultType.FORM and result["step_id"] == "zeroconf_modbus"
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_NAME: "Garage"})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await _unload(hass, result["result"])
 
 
-async def test_user_flow_found_wallbox_without_modbus(hass, socket_enabled):
-    with patch("custom_components.elli.config_flow._async_discover", return_value=[_service()]), \
+async def test_user_flow_found_first_generation(hass, socket_enabled):
+    gen1 = _service()
+    gen1.port = 4712
+    with patch("custom_components.elli.config_flow._async_discover", return_value=[gen1]), \
             patch("custom_components.elli.config_flow._validate", return_value="cannot_connect"):
         result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "found_0"})
