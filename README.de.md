@@ -2,86 +2,74 @@
 
 [English](README.md) | **Deutsch**
 
-Steuere deine **Elli**-Wallbox aus Home Assistant, lokal und ohne Cloud. Die Elli-App funktioniert weiter.
+Steuere deine **Elli**-Wallbox aus Home Assistant, lokal und ohne Cloud. Die Elli-App funktioniert weiter. Unterstützt beide Wallbox-Generationen, über **Modbus** oder **EEBUS**.
 
 [![In HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=frane&repository=ha-elli&category=integration)
 
-## Welche Wallbox?
+## Was geht wo
 
-| Deine Wallbox | Verbindung | Was du bekommst |
-|---|---|---|
-| **Elli Charger 2**, mit „2“ im Namen (auch die Volkswagen-, Škoda- und CUPRA-Varianten) | **Modbus** | Laden an/aus, Ladestrom (6–16 A), Leistung, Energie, Fahrzeugstatus |
-| **Erste Generation** (Elli Charger Connect / Pro, VW ID. Charger, Škoda iV Charger, CUPRA) | **EEBUS** | Leistungslimit und Pause, Leistung, Fahrzeugstatus |
+Die **Elli Charger 2** (mit „2“ im Namen, auch die Volkswagen-, Škoda- und CUPRA-Varianten) spricht Modbus und EEBUS. Die **erste Generation** (Elli Charger Connect / Pro, VW ID. Charger, Škoda iV Charger, CUPRA) spricht nur EEBUS.
 
-Die erste Generation hat kein Modbus. EEBUS geht auch bei der Elli Charger 2, kann dort aber weniger: Nimm da Modbus.
+| | Charger 2 · Modbus | Charger 2 · EEBUS | 1. Gen. · EEBUS |
+|---|---|---|---|
+| Laden starten / stoppen | ✅ Schalter | ✅ Limit 0 W | ✅ Limit 0 W |
+| Ladegeschwindigkeit | ✅ Strom, 6–16 A | ✅ Leistungslimit, W | ✅ Leistungslimit, W |
+| Ladeleistung | ✅ gemessen | ✅ gemessen | ✅ aus den Strömen berechnet |
+| Energie (kWh) | ✅ gesamt und seit Neustart | – | – (*Integral*-Helfer) |
+| Strom je Phase | ✅ | – | ✅ |
+| Spannung je Phase | ✅ | – | – |
+| Fahrzeug verbunden, lädt | ✅ | – | ✅ |
+| Ladestatus | ✅ A1 … F | – | ✅ aktiv, pausiert, fertig … |
+| Störung | ✅ | ✅ | ✅ |
+| Grenze, die die Wallbox anwendet | ✅ Strom | ✅ Leistung | ✅ Leistung |
+| Platinentemperatur | ✅ | – | – |
+| Wenn Home Assistant weg ist | Failsafe-Strom | Failsafe-Leistung und -Dauer | – |
+| Aktualisierung | alle 5 s (einstellbar) | sobald sich etwas ändert | sobald sich etwas ändert |
+| An der Wallbox | Modbus-Server einschalten | koppeln | koppeln |
 
-Du kommst von [ha-elli-2-modbus](https://github.com/frane/ha-elli-2-modbus)? Erst die alte Integration entfernen, dann diese einrichten.
+Alle Entitäten und Werte: [docs/features.de.md](https://github.com/frane/ha-elli/blob/main/docs/features.de.md).
 
 ## Installation
 
 1. In Home Assistant: **HACS** → nach **Elli Charger** suchen → **Herunterladen**.
 2. Home Assistant neu starten.
 
+Du kommst von [ha-elli-2-modbus](https://github.com/frane/ha-elli-2-modbus)? Erst die alte Integration entfernen, dann diese einrichten.
+
 <details><summary>Ohne HACS</summary>
 
 Den Ordner `custom_components/elli` in den Ordner `custom_components` deiner Home-Assistant-Konfiguration kopieren und neu starten.
 </details>
 
-## Einrichtung: Elli Charger 2 (Modbus)
+## Einrichtung mit Modbus (Elli Charger 2)
 
 **An der Wallbox** (einmalig). Du brauchst die Zugangsdatenkarte, die bei der Wallbox lag.
 
 1. `https://<IP der Wallbox>` im Browser öffnen (Zertifikatswarnung bestätigen) und als **Service User** anmelden.
 2. **Software-Update:** Firmware **R03.004.045.121** oder neuer.
 3. **Verbindungen → Modbus-Server:** an.
-4. **Ladeverwaltung → Ladeeinstellungen → PV-Überschuss-Laden:** aus, damit die Wallbox nicht gegen Home Assistant regelt.
+4. **Ladeverwaltung → Ladeeinstellungen → PV-Überschuss-Laden:** aus, wenn Home Assistant den Strom vorgeben soll.
 5. Der Wallbox im Router eine feste IP geben.
 
-**In Home Assistant:** *Einstellungen → Geräte & Dienste → Integration hinzufügen →* **Elli Charger** → **Modbus TCP**, IP eintragen. Fertig.
+**In Home Assistant:** *Einstellungen → Geräte & Dienste → Integration hinzufügen →* **Elli Charger** → **Modbus TCP**, IP eintragen.
 
-Danach im Gerät den **Failsafe-Strom** setzen: Das macht die Wallbox, wenn Home Assistant 15 s lang weg ist. `0` stoppt das Laden, `6`–`16` A lädt weiter.
+Danach im Gerät den **Failsafe-Strom** setzen: `0` stoppt das Laden, wenn Home Assistant weg ist, `6`–`16` A lädt weiter.
 
-Tipp: In der Elli-App *Sofortladen* einschalten, sonst braucht jeder Ladevorgang eine Freigabe per RFID oder App. Ausführlicher: [enable-modbus.de.md](https://github.com/frane/elli-2-modbus/blob/main/docs/enable-modbus.de.md).
+Details: [docs/modbus.de.md](https://github.com/frane/ha-elli/blob/main/docs/modbus.de.md).
 
-## Einrichtung: erste Generation (EEBUS)
+## Einrichtung mit EEBUS (beide Generationen)
 
-1. Home Assistant findet die Wallbox selbst: *Einstellungen → Geräte & Dienste*, unter **Entdeckt** → **Hinzufügen**. Falls nicht: *Integration hinzufügen →* **Elli Charger** → **EEBUS**, mit IP, Port `4712` und der SKI der Wallbox (in ihrer Weboberfläche bei EEBUS).
-2. Home Assistant zeigt jetzt einen Kopplungsschritt. In der Weboberfläche der Wallbox **Verbindungen → HEMS-Verbindung** öffnen, **home-assistant** auswählen und koppeln.
+1. Home Assistant findet die Wallbox selbst: *Einstellungen → Geräte & Dienste*, unter **Entdeckt** → **Hinzufügen**.
+2. Home Assistant zeigt einen Kopplungsschritt. In der Weboberfläche der Wallbox **Verbindungen → HEMS-Verbindung** öffnen, **home-assistant** auswählen und koppeln.
 3. Zurück in Home Assistant auf **Absenden** klicken.
 
-Die Wallbox arbeitet nur mit einem Energiemanager. Andere unter **HEMS-Verbindung** entfernen.
+Die Wallbox arbeitet mit einem EEBUS-Energiemanager zur Zeit. Andere unter **HEMS-Verbindung** entfernen.
 
-## Entitäten
+Details, manuelle Einrichtung und Hinweise zur ersten Generation: [docs/eebus.de.md](https://github.com/frane/ha-elli/blob/main/docs/eebus.de.md).
 
-**Modbus:** Laden freigegeben (Schalter), Ladestrom (6–16 A), Ladestatus, Fahrzeug verbunden, Lädt, Störung, Ladeleistung, Energie gesamt (für das Energie-Dashboard), Strom und Spannung je Phase, Aktive Stromgrenze, Platinentemperatur.
+## Hilfe
 
-**EEBUS:** Ladeleistungslimit (W, 0 = Pause), Leistungslimit (Schalter), Ladeleistung, Fahrzeug verbunden, Lädt, Strom je Phase, Energie des Ladevorgangs, EEBUS verbunden.
-
-Erste Generation:
-
-- Die Wallbox meldet keine Leistung, *Ladeleistung* wird aus den Strömen berechnet. Für kWh einen *Integral*-Helfer darauf anlegen.
-- Fahrzeugwerte erscheinen, sobald einmal ein Auto angesteckt war.
-- Ob Strom fließt, zeigt *Lädt*. *Ladezustand* steht schon auf `active`, während das Auto auf die Freigabe wartet.
-
-**PV-Überschussladen:** eine Automation, die *Ladestrom* (Modbus) oder *Ladeleistungslimit* (EEBUS) anhand deiner Netzleistung setzt.
-
-## Grenzen
-
-- Über Modbus maximal 16 A, auch bei 22-kW-Wallboxen. Keine Phasenumschaltung.
-
-## Fehlersuche
-
-| Problem | Lösung |
-|---|---|
-| Modbus: keine Verbindung | Modbus-Server an? IP richtig? Gleiches Netz wie Home Assistant? |
-| Modbus: falsche Register | Firmware der Wallbox aktualisieren |
-| Modbus: Laden stoppt von selbst | Home Assistant war nicht erreichbar, deshalb galt der Failsafe-Strom |
-| Modbus: Strom niedriger als eingestellt | Die Wallbox begrenzt selbst (Temperatur, Lastmanagement); siehe *Aktive Stromgrenze* |
-| EEBUS: Wallbox nicht gefunden | Gleiches Netz, kein VLAN dazwischen |
-| EEBUS: Limit wird ignoriert | Wallbox neu starten (sie hält noch einen entfernten Energiemanager) |
-| EEBUS: kein Fahrzeug angezeigt | Ab- und wieder anstecken |
-| EEBUS: keine Verbindung nach Neustart von Home Assistant | Wallbox am Sicherungsautomaten aus- und einschalten |
-| Alles andere | Issue öffnen und die Diagnosedaten anhängen: *Geräte & Dienste → Elli Charger → ⋮ → Diagnosedaten herunterladen* |
+Fehlersuche für [Modbus](https://github.com/frane/ha-elli/blob/main/docs/modbus.de.md#fehlersuche) und [EEBUS](https://github.com/frane/ha-elli/blob/main/docs/eebus.de.md#fehlersuche). Für ein Issue die Diagnosedaten anhängen: *Geräte & Dienste → Elli Charger → ⋮ → Diagnosedaten herunterladen* (ohne Seriennummern).
 
 ## Entwicklung
 
