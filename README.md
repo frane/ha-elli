@@ -6,9 +6,16 @@ Control your **Elli** wallbox from Home Assistant, locally, without the cloud. T
 
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=frane&repository=ha-elli&category=integration)
 
+## Which wallbox do you have?
+
+| | Models | Connection |
+|---|---|---|
+| **Elli Charger 2** | Elli Charger Connect 2 / Pro 2, plus the VW, Škoda and CUPRA models with "2" in the name | Modbus or EEBUS |
+| **First generation** | Elli Charger Connect / Pro, VW ID. Charger, Škoda iV Charger | EEBUS only |
+
 ## What is available where
 
-| | Charger 2 · Modbus | Charger 2 · EEBUS | 1st gen · EEBUS |
+| | Charger 2  · Modbus | Charger 2 · EEBUS | 1st gen · EEBUS |
 |---|---|---|---|
 | Start / stop charging | ✅ switch | ✅ limit 0 W | ✅ limit 0 W |
 | Set charging speed | ✅ current, 6–16 A | ✅ power limit, W | ✅ power limit, W |
@@ -24,8 +31,6 @@ Control your **Elli** wallbox from Home Assistant, locally, without the cloud. T
 | If Home Assistant is gone | failsafe current | failsafe power and duration | – |
 | Updates | every 5 s (adjustable) | as soon as something changes | as soon as something changes |
 | On the wallbox | turn on the Modbus server | pair | pair |
-
-1st gen: Elli Charger Connect / Pro, VW ID. Charger, Škoda iV Charger.
 
 All entities: [docs/features.md](https://github.com/frane/ha-elli/blob/main/docs/features.md).
 
