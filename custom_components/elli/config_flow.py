@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
 from elli2modbus import ElliCharger, ModbusConnectionError, ModbusError
 from ellieebus import ElliEebus
 from pyeebus.ship import is_ski_valid, normalize_ski
+from pyeebus.ship.mdns import ShipMdns, ShipService
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
@@ -34,9 +36,12 @@ from .const import (
     MIN_SCAN_INTERVAL,
 )
 from .coordinator import ElliConfigEntry
-from .eebus import async_create_client
+from .eebus import async_create_client, async_get_zeroconf
 
 _LOGGER = logging.getLogger(__name__)
+
+DISCOVERY_SECONDS = 3
+MAX_FOUND = 5  # one menu entry (async_step_found_N) each
 
 
 def _connection_schema(defaults: dict[str, Any]) -> vol.Schema:
@@ -70,6 +75,28 @@ async def _validate(data: dict[str, Any]) -> str | None:
     return None
 
 
+async def _async_discover(hass: HomeAssistant) -> list[ShipService]:
+    """Elli wallboxes announcing EEBUS (SHIP) on the network."""
+    try:
+        zc = await async_get_zeroconf(hass)
+        if zc is None:
+            return []
+        mdns = ShipMdns(zeroconf=zc)
+        try:
+            await mdns.browse()
+            await asyncio.sleep(DISCOVERY_SECONDS)
+        finally:
+            await mdns.close()
+    except Exception:  # noqa: BLE001
+        _LOGGER.debug("EEBUS discovery failed", exc_info=True)
+        return []
+    return [s for s in mdns.services.values() if s.brand.lower().startswith("elli")]
+
+
+def _service_host(service: ShipService) -> str:
+    return service.addresses[0] if service.addresses else service.host
+
+
 def _unique_id(data: dict[str, Any]) -> str:
     return f"{data[CONF_HOST].strip().lower()}:{data[CONF_PORT]}:{data[CONF_UNIT_ID]}"
 
@@ -91,12 +118,51 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         self._eebus: dict[str, Any] = {}
+        self._modbus: dict[str, Any] = {}
+        self._found: list[ShipService] = []
         self._client: ElliEebus | None = None
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        return self.async_show_menu(step_id="user", menu_options=["modbus", "eebus"])
+        """Wallboxes found on the network first, manual setup as a fallback."""
+        configured = {e.unique_id for e in self._async_current_entries()} | {
+            str(e.data.get(CONF_HOST, "")).strip().lower() for e in self._async_current_entries()
+        }
+        self._found = [
+            s for s in await _async_discover(self.hass)
+            if s.ski not in configured and _service_host(s).lower() not in configured
+        ][:MAX_FOUND]
+        if not self._found:
+            return await self.async_step_manual()
+        manual = "Manuell einrichten" if self.hass.config.language.startswith("de") else "Set up manually"
+        options = {f"found_{i}": f"{s.brand.capitalize()} {s.model} ({_service_host(s)})".replace("  ", " ")
+                   for i, s in enumerate(self._found)}
+        return self.async_show_menu(step_id="user", menu_options={**options, "manual": manual})
+
+    async def async_step_manual(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return self.async_show_menu(step_id="manual", menu_options=["modbus", "eebus"])
+
+    async def _async_pick(self, index: int) -> ConfigFlowResult:
+        s = self._found[index]
+        return await self._async_discovered(_service_host(s), s.port, s.ski, s.brand, user=True)
+
+    async def async_step_found_0(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_pick(0)
+
+    async def async_step_found_1(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_pick(1)
+
+    async def async_step_found_2(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_pick(2)
+
+    async def async_step_found_3(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_pick(3)
+
+    async def async_step_found_4(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self._async_pick(4)
 
     # --- Modbus ---------------------------------------------------------------
 
@@ -152,16 +218,59 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
         ski = normalize_ski(str(props.get("ski", "")))
         if not is_ski_valid(ski):
             return self.async_abort(reason="not_supported")
-        await self.async_set_unique_id(ski)
-        self._abort_if_unique_id_configured(updates={CONF_HOST: discovery_info.host})
+        return await self._async_discovered(
+            discovery_info.host, discovery_info.port, ski, str(props.get("brand", "Elli"))
+        )
+
+    async def _async_discovered(
+        self, host: str, port: int | None, ski: str, brand: str, user: bool = False
+    ) -> ConfigFlowResult:
+        await self.async_set_unique_id(ski, raise_on_progress=not user)
+        self._abort_if_unique_id_configured(updates={CONF_HOST: host})
+        # The same wallbox may already be set up over Modbus.
+        if any(str(e.data.get(CONF_HOST, "")).strip().lower() == host.lower() for e in self._async_current_entries()):
+            return self.async_abort(reason="already_configured")
         self._eebus = {
             CONF_NAME: DEFAULT_NAME,
-            CONF_HOST: discovery_info.host,
-            CONF_PORT: discovery_info.port or DEFAULT_EEBUS_PORT,
+            CONF_HOST: host,
+            CONF_PORT: port or DEFAULT_EEBUS_PORT,
             CONF_SKI: ski,
         }
-        self.context["title_placeholders"] = {"name": f"{props.get('brand', 'Elli')} (EEBUS)"}
+        self.context["title_placeholders"] = {"name": brand.capitalize()}
+        # An Elli Charger 2 with the Modbus server on answers on the same host: offer both.
+        self._modbus = {CONF_HOST: host, CONF_PORT: DEFAULT_PORT, CONF_UNIT_ID: DEFAULT_UNIT_ID}
+        if await _validate(self._modbus) is None:
+            return await self.async_step_zeroconf_menu()
         return await self.async_step_zeroconf_confirm()
+
+    async def async_step_zeroconf_menu(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return self.async_show_menu(
+            step_id="zeroconf_menu",
+            menu_options=["zeroconf_modbus", "zeroconf_confirm"],
+            description_placeholders={"host": self._modbus[CONF_HOST]},
+        )
+
+    async def async_step_zeroconf_modbus(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            await self.async_set_unique_id(_unique_id(self._modbus), raise_on_progress=False)
+            self._abort_if_unique_id_configured()
+            if (error := await _validate(self._modbus)) is None:
+                return self.async_create_entry(
+                    title=user_input[CONF_NAME],
+                    data={CONF_CONNECTION: CONNECTION_MODBUS, **self._modbus},
+                )
+            errors["base"] = error
+        return self.async_show_form(
+            step_id="zeroconf_modbus",
+            data_schema=vol.Schema({vol.Required(CONF_NAME, default=DEFAULT_NAME): str}),
+            description_placeholders={"host": self._modbus[CONF_HOST]},
+            errors=errors,
+        )
 
     async def async_step_zeroconf_confirm(
         self, user_input: dict[str, Any] | None = None

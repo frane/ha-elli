@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
+from unittest.mock import patch
 from elli2modbus.simulator import ElliSim
 import pytest
 
@@ -14,7 +15,8 @@ from custom_components.elli.const import CONF_UNIT_ID, DOMAIN
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations, mock_async_zeroconf):
     # the integration depends on zeroconf (EEBUS discovery); never use the real one in tests
-    yield
+    with patch("custom_components.elli.config_flow._async_discover", return_value=[]):
+        yield
 
 
 @pytest.fixture

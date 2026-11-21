@@ -54,7 +54,7 @@ Copy `custom_components/elli` into the `custom_components` folder of your Home A
 4. **Charging management → Charging settings → PV surplus charging:** off, if Home Assistant should control the current.
 5. Give the wallbox a fixed IP address in your router.
 
-**In Home Assistant:** *Settings → Devices & services → Add integration →* **Elli Charger** → **Modbus TCP**, enter the IP.
+**In Home Assistant:** *Settings → Devices & services → Add integration →* **Elli Charger**. Pick your wallbox from the list, then **Modbus TCP**. Not in the list: **Set up manually** → **Modbus TCP**, enter the IP.
 
 Then set **Failsafe current** on the device: `0` stops charging when Home Assistant is gone, `6`–`16` A keeps charging.
 
@@ -62,7 +62,7 @@ More: [docs/modbus.md](https://github.com/frane/ha-elli/blob/main/docs/modbus.md
 
 ## Setup with EEBUS (both generations)
 
-1. Home Assistant finds the wallbox by itself: *Settings → Devices & services*, under **Discovered** → **Add**.
+1. *Settings → Devices & services → Add integration →* **Elli Charger**. Pick your wallbox from the list (on the Elli Charger 2, then **EEBUS**). Not in the list: **Set up manually** → **EEBUS**.
 2. Home Assistant shows a pairing step. In the wallbox web interface open **Connections → HEMS connection**, select **home-assistant** and pair.
 3. Back in Home Assistant, click **Submit**.
 

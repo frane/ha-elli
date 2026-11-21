@@ -3,10 +3,14 @@
     "step": {
       "user": {
         "title": "Elli Charger",
+        "description": "Found on your network. Pick your wallbox, or set it up manually."
+      },
+      "manual": {
+        "title": "Elli Charger",
         "description": "How should Home Assistant talk to the wallbox?",
         "menu_options": {
-          "modbus": "Modbus TCP (Elli Charger 2, recommended: all values)",
-          "eebus": "EEBUS (power limit; Elli Charger 2 and first generation)"
+          "modbus": "Modbus TCP (Elli Charger 2)",
+          "eebus": "EEBUS (Elli Charger 2 and first generation)"
         }
       },
       "modbus": {
@@ -37,6 +41,21 @@
           "host": "IP address or hostname of the wallbox",
           "port": "4711 on the Elli Charger 2, 4712 on first-generation wallboxes (ID. Charger, Škoda iV)",
           "ski": "40 hexadecimal characters"
+        }
+      },
+      "zeroconf_menu": {
+        "title": "Elli Charger",
+        "description": "The wallbox at {host} offers Modbus and EEBUS. Which connection?",
+        "menu_options": {
+          "zeroconf_modbus": "Modbus TCP",
+          "zeroconf_confirm": "EEBUS"
+        }
+      },
+      "zeroconf_modbus": {
+        "title": "Elli Charger 2 (Modbus TCP)",
+        "description": "Add the wallbox at {host} over Modbus TCP?",
+        "data": {
+          "name": "Name"
         }
       },
       "zeroconf_confirm": {

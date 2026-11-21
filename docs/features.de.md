@@ -61,8 +61,10 @@ Die erste Generation hat keine Failsafe-Einstellungen.
 | | M | E2 | E1 |
 |---|---|---|---|
 | Aktualisierung | Abfrage alle 5 s (einstellbar) | Push, sobald sich etwas ändert | Push |
-| Wird automatisch gefunden | | ✅ | ✅ |
+| Wird automatisch gefunden | ✅ ⁵ | ✅ | ✅ |
 | Einrichtung an der Wallbox | Modbus-Server einschalten | koppeln | koppeln |
 | EEBUS-Energiemanager gleichzeitig | | einer | einer |
 | Maximaler Strom | 16 A, auch bei 22-kW-Modellen | | |
 | Phasenumschaltung | nein | nein | nein |
+
+⁵ Über die EEBUS-Ankündigung der Wallbox; Home Assistant prüft dann, ob Modbus antwortet.

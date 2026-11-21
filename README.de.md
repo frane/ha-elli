@@ -54,7 +54,7 @@ Den Ordner `custom_components/elli` in den Ordner `custom_components` deiner Hom
 4. **Ladeverwaltung → Ladeeinstellungen → PV-Überschuss-Laden:** aus, wenn Home Assistant den Strom vorgeben soll.
 5. Der Wallbox im Router eine feste IP geben.
 
-**In Home Assistant:** *Einstellungen → Geräte & Dienste → Integration hinzufügen →* **Elli Charger** → **Modbus TCP**, IP eintragen.
+**In Home Assistant:** *Einstellungen → Geräte & Dienste → Integration hinzufügen →* **Elli Charger**. Deine Wallbox aus der Liste wählen, dann **Modbus TCP**. Nicht in der Liste: **Manuell einrichten** → **Modbus TCP**, IP eintragen.
 
 Danach im Gerät den **Failsafe-Strom** setzen: `0` stoppt das Laden, wenn Home Assistant weg ist, `6`–`16` A lädt weiter.
 
@@ -62,7 +62,7 @@ Mehr: [docs/modbus.de.md](https://github.com/frane/ha-elli/blob/main/docs/modbus
 
 ## Einrichtung mit EEBUS (beide Generationen)
 
-1. Home Assistant findet die Wallbox selbst: *Einstellungen → Geräte & Dienste*, unter **Entdeckt** → **Hinzufügen**.
+1. *Einstellungen → Geräte & Dienste → Integration hinzufügen →* **Elli Charger**. Deine Wallbox aus der Liste wählen (bei der Elli Charger 2 dann **EEBUS**). Nicht in der Liste: **Manuell einrichten** → **EEBUS**.
 2. Home Assistant zeigt einen Kopplungsschritt. In der Weboberfläche der Wallbox **Verbindungen → HEMS-Verbindung** öffnen, **home-assistant** auswählen und koppeln.
 3. Zurück in Home Assistant auf **Absenden** klicken.
 

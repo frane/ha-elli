@@ -21,7 +21,7 @@
     "elli-2-modbus==0.1.0",
     "elli-eebus==0.1.5"
   ],
-  "version": "0.1.5",
+  "version": "0.1.6",
   "zeroconf": [
     {
       "type": "_ship._tcp.local.",
