@@ -21,8 +21,6 @@ The protocol code lives in the libraries [elli-2-modbus](https://github.com/fran
 
 **Rule of thumb: if your wallbox has Modbus, use Modbus.** EEBUS on the Elli Charger 2 offers much less, and the wallbox accepts only one EEBUS energy manager in a sensible way.
 
-**Energy manager on EEBUS too?** If an energy manager such as Solar Manager already controls the wallbox over EEBUS, use Modbus for Home Assistant, or put [elli-eebus-proxy](https://github.com/frane/elli-eebus-proxy) in between and connect Home Assistant to the proxy.
-
 ## Installation (HACS)
 
 1. In Home Assistant, open **HACS**, search for **Elli Charger** → **Download**. The "Open in HACS" button above takes you straight there.
