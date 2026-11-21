@@ -27,14 +27,12 @@ The **Elli Charger 2** (with "2" in the name, also the Volkswagen, Škoda and CU
 | Updates | every 5 s (adjustable) | as soon as something changes | as soon as something changes |
 | On the wallbox | turn on the Modbus server | pair | pair |
 
-Every entity and value: [docs/features.md](https://github.com/frane/ha-elli/blob/main/docs/features.md).
+All entities: [docs/features.md](https://github.com/frane/ha-elli/blob/main/docs/features.md).
 
 ## Installation
 
 1. In Home Assistant: **HACS** → search **Elli Charger** → **Download**.
 2. Restart Home Assistant.
-
-Coming from [ha-elli-2-modbus](https://github.com/frane/ha-elli-2-modbus)? Remove it first, then set up this one.
 
 <details><summary>Without HACS</summary>
 
@@ -55,7 +53,7 @@ Copy `custom_components/elli` into the `custom_components` folder of your Home A
 
 Then set **Failsafe current** on the device: `0` stops charging when Home Assistant is gone, `6`–`16` A keeps charging.
 
-Details: [docs/modbus.md](https://github.com/frane/ha-elli/blob/main/docs/modbus.md).
+More: [docs/modbus.md](https://github.com/frane/ha-elli/blob/main/docs/modbus.md).
 
 ## Setup with EEBUS (both generations)
 
@@ -65,7 +63,7 @@ Details: [docs/modbus.md](https://github.com/frane/ha-elli/blob/main/docs/modbus
 
 The wallbox works with one EEBUS energy manager at a time. Remove other ones under **HEMS connection**.
 
-Details, manual setup and first-generation notes: [docs/eebus.md](https://github.com/frane/ha-elli/blob/main/docs/eebus.md).
+More: [docs/eebus.md](https://github.com/frane/ha-elli/blob/main/docs/eebus.md).
 
 ## Help
 

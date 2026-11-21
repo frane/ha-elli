@@ -27,14 +27,12 @@ Die **Elli Charger 2** (mit „2“ im Namen, auch die Volkswagen-, Škoda- und 
 | Aktualisierung | alle 5 s (einstellbar) | sobald sich etwas ändert | sobald sich etwas ändert |
 | An der Wallbox | Modbus-Server einschalten | koppeln | koppeln |
 
-Alle Entitäten und Werte: [docs/features.de.md](https://github.com/frane/ha-elli/blob/main/docs/features.de.md).
+Alle Entitäten: [docs/features.de.md](https://github.com/frane/ha-elli/blob/main/docs/features.de.md).
 
 ## Installation
 
 1. In Home Assistant: **HACS** → nach **Elli Charger** suchen → **Herunterladen**.
 2. Home Assistant neu starten.
-
-Du kommst von [ha-elli-2-modbus](https://github.com/frane/ha-elli-2-modbus)? Erst die alte Integration entfernen, dann diese einrichten.
 
 <details><summary>Ohne HACS</summary>
 
@@ -55,7 +53,7 @@ Den Ordner `custom_components/elli` in den Ordner `custom_components` deiner Hom
 
 Danach im Gerät den **Failsafe-Strom** setzen: `0` stoppt das Laden, wenn Home Assistant weg ist, `6`–`16` A lädt weiter.
 
-Details: [docs/modbus.de.md](https://github.com/frane/ha-elli/blob/main/docs/modbus.de.md).
+Mehr: [docs/modbus.de.md](https://github.com/frane/ha-elli/blob/main/docs/modbus.de.md).
 
 ## Einrichtung mit EEBUS (beide Generationen)
 
@@ -65,7 +63,7 @@ Details: [docs/modbus.de.md](https://github.com/frane/ha-elli/blob/main/docs/mod
 
 Die Wallbox arbeitet mit einem EEBUS-Energiemanager zur Zeit. Andere unter **HEMS-Verbindung** entfernen.
 
-Details, manuelle Einrichtung und Hinweise zur ersten Generation: [docs/eebus.de.md](https://github.com/frane/ha-elli/blob/main/docs/eebus.de.md).
+Mehr: [docs/eebus.de.md](https://github.com/frane/ha-elli/blob/main/docs/eebus.de.md).
 
 ## Hilfe
 
