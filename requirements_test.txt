@@ -1,4 +1,4 @@
 pytest-homeassistant-custom-component
 # Same versions as manifest.json
 elli-2-modbus==0.1.0
-elli-eebus==0.1.5
+elli-eebus==0.1.6
