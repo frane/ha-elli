@@ -20,7 +20,7 @@ Control your **Elli** wallbox from Home Assistant, locally, without the cloud. T
 | Start / stop charging | ✅ switch | ✅ limit 0 W | ✅ limit 0 W |
 | Set charging speed | ✅ current, 6–16 A | ✅ power limit, W | ✅ power limit, W |
 | Charging power | ✅ measured | ✅ measured | ✅ calculated from the currents |
-| Energy (kWh) | ✅ total and since power on | – | – (*Integral* helper) |
+| Energy (kWh) | ✅ total and since power on | ✅ calculated from the power | ✅ calculated from the power |
 | Current per phase | ✅ | – | ✅ |
 | Voltage per phase | ✅ | – | – |
 | Vehicle connected, charging | ✅ | – | ✅ |

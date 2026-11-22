@@ -21,11 +21,12 @@ M = Elli Charger 2 over Modbus · E2 = Elli Charger 2 over EEBUS · E1 = first g
 | Total energy | sensor | kWh, meter reading, for the Energy dashboard | ✅ | | |
 | Energy since power on | sensor | kWh | ✅ | | |
 | Energy | sensor | kWh, only if the wallbox reports it | | ² | ² |
+| Energy (calculated) | sensor | kWh, calculated from *Charging power*, for the Energy dashboard | | ✅ | ✅ |
 | Current L1–L3 | sensor | A | ✅ | | ✅ |
 | Voltage L1–L3 | sensor | V | ✅ | | |
 | PCB temperature | sensor | °C, diagnostic | ✅ | | |
 
-¹ The first generation reports no power. It is calculated from the currents × 230 V. For kWh, add an *Integral* helper on it.
+¹ The first generation reports no power. It is calculated from the currents × 230 V.
 ² Created only when the wallbox reports energy. The wallboxes tested so far do not.
 
 ## State

@@ -20,7 +20,7 @@ Steuere deine **Elli**-Wallbox aus Home Assistant, lokal und ohne Cloud. Die Ell
 | Laden starten / stoppen | ✅ Schalter | ✅ Limit 0 W | ✅ Limit 0 W |
 | Ladegeschwindigkeit | ✅ Strom, 6–16 A | ✅ Leistungslimit, W | ✅ Leistungslimit, W |
 | Ladeleistung | ✅ gemessen | ✅ gemessen | ✅ aus den Strömen berechnet |
-| Energie (kWh) | ✅ gesamt und seit Neustart | – | – (*Integral*-Helfer) |
+| Energie (kWh) | ✅ gesamt und seit Neustart | ✅ aus der Leistung berechnet | ✅ aus der Leistung berechnet |
 | Strom je Phase | ✅ | – | ✅ |
 | Spannung je Phase | ✅ | – | – |
 | Fahrzeug verbunden, lädt | ✅ | – | ✅ |

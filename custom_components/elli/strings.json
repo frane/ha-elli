@@ -209,6 +209,9 @@
       "energy": {
         "name": "Energy"
       },
+      "energy_calculated": {
+        "name": "Energy (calculated)"
+      },
       "charge_state": {
         "name": "Charge state"
       }

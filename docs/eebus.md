@@ -26,7 +26,7 @@ Home Assistant keeps its EEBUS certificate in `.storage/elli/`. Keep it: a new c
 
 ## First generation
 
-- **Power:** calculated from the currents × 230 V, because the wallbox reports none. For kWh, add an *Integral* helper on *Charging power*.
+- **Power:** calculated from the currents × 230 V, because the wallbox reports none. Home Assistant also calculates *Energy (calculated)* in kWh from it.
 - **Limit:** set as current per phase on the vehicle. The wallbox resets it on every plug-in and then starts at 6 A. The integration writes the limit again each time (the maximum while *Power limit* is off).
 - **Charge state** is already `active` while the car waits for authorization. *Charging* shows whether current flows.
 - **Vehicle:** only reported for a car that was plugged in while EEBUS was connected.

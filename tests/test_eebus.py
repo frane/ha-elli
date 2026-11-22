@@ -89,6 +89,10 @@ async def test_eebus_setup_and_control(hass, elli):
                 and _state(hass, "number.elli_wallbox_failsafe_power") == "22000")
     assert _state(hass, "binary_sensor.elli_wallbox_eebus_connected") == "on"
     assert float(_state(hass, "sensor.elli_wallbox_charging_power")) == 0
+    energy = hass.states.get("sensor.elli_wallbox_energy_calculated")
+    assert float(energy.state) == 0
+    assert energy.attributes["state_class"] == "total_increasing"
+    assert energy.attributes["unit_of_measurement"] == "kWh"
     assert _state(hass, "switch.elli_wallbox_power_limit") == "off"
     assert _state(hass, "sensor.elli_wallbox_operating_state") == "normalOperation"
     assert _state(hass, "binary_sensor.elli_wallbox_problem") == "off"

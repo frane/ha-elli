@@ -21,11 +21,12 @@ M = Elli Charger 2 über Modbus · E2 = Elli Charger 2 über EEBUS · E1 = erste
 | Energie gesamt | Sensor | kWh, Zählerstand, für das Energie-Dashboard | ✅ | | |
 | Energie seit Neustart | Sensor | kWh | ✅ | | |
 | Energie | Sensor | kWh, nur wenn die Wallbox sie meldet | | ² | ² |
+| Energie (berechnet) | Sensor | kWh, aus der *Ladeleistung* berechnet, für das Energie-Dashboard | | ✅ | ✅ |
 | Strom L1–L3 | Sensor | A | ✅ | | ✅ |
 | Spannung L1–L3 | Sensor | V | ✅ | | |
 | Platinentemperatur | Sensor | °C, Diagnose | ✅ | | |
 
-¹ Die erste Generation meldet keine Leistung. Sie wird aus den Strömen × 230 V berechnet. Für kWh einen *Integral*-Helfer darauf anlegen.
+¹ Die erste Generation meldet keine Leistung. Sie wird aus den Strömen × 230 V berechnet.
 ² Entsteht nur, wenn die Wallbox Energie meldet. Die bisher getesteten Wallboxen tun das nicht.
 
 ## Zustand

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from elli2modbus import ChargerStatus, ChargingState
 from ellieebus import ElliStatus
 
 from homeassistant.components.sensor import (
+    RestoreSensor,
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
@@ -22,8 +24,10 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.util import dt as dt_util
 
 from .coordinator import ElliConfigEntry, ElliCoordinator
 from .eebus import EebusCoordinator, EebusEntity, add_when_reported
@@ -187,6 +191,7 @@ async def async_setup_entry(
     coordinator = entry.runtime_data
     if isinstance(coordinator, EebusCoordinator):
         add_when_reported(coordinator, entry, async_add_entities, EEBUS_SENSORS, EebusSensor)
+        async_add_entities([EebusEnergySensor(coordinator)])
         return
     async_add_entities(ElliSensor(coordinator, desc) for desc in SENSORS)
 
@@ -215,3 +220,69 @@ class EebusSensor(EebusEntity, SensorEntity):
     @property
     def native_value(self) -> float | int | str | None:
         return self.entity_description.value_fn(self.coordinator.data)
+
+
+class EnergyIntegrator:
+    """Energy from power samples: each power value holds until the next one (left Riemann sum)."""
+
+    def __init__(self, wh: float = 0.0) -> None:
+        self.wh = wh
+        self._power: float | None = None
+        self._since: datetime | None = None
+
+    def sample(self, power: float | None, now: datetime) -> None:
+        """Add the energy since the last sample. None = no data, nothing is counted until the next value."""
+        if self._power is not None and self._since is not None and now > self._since:
+            self.wh += self._power * (now - self._since).total_seconds() / 3600
+        self._power = max(power, 0.0) if power is not None else None
+        self._since = now
+
+
+class EebusEnergySensor(EebusEntity, RestoreSensor):
+    """Energy calculated from the charging power, for the Energy dashboard.
+
+    EEBUS wallboxes tested so far report no energy meter. The power is pushed only when it
+    changes, so the sum is also advanced every minute.
+    """
+
+    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
+    _attr_suggested_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_suggested_display_precision = 2
+
+    def __init__(self, coordinator: EebusCoordinator) -> None:
+        super().__init__(coordinator, "energy_calculated")
+        self._energy = EnergyIntegrator()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last = await self.async_get_last_sensor_data()
+        if last is not None and last.native_value is not None:
+            try:
+                self._energy.wh = float(last.native_value)
+            except (TypeError, ValueError):
+                pass
+        self._sample()
+        self.async_on_remove(
+            async_track_time_interval(self.hass, self._tick, timedelta(minutes=1))
+        )
+
+    def _sample(self) -> None:
+        status = self.coordinator.data
+        power = status.power if status is not None and status.connected else None
+        self._energy.sample(power, dt_util.utcnow())
+
+    @callback
+    def _tick(self, _now: datetime) -> None:
+        self._sample()
+        self.async_write_ha_state()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self._sample()
+        super()._handle_coordinator_update()
+
+    @property
+    def native_value(self) -> float:
+        return round(self._energy.wh, 1)

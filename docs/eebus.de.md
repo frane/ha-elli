@@ -26,7 +26,7 @@ Home Assistant legt sein EEBUS-Zertifikat unter `.storage/elli/` ab. Behalten: E
 
 ## Erste Generation
 
-- **Leistung:** aus den Strömen × 230 V berechnet, weil die Wallbox keine meldet. Für kWh einen *Integral*-Helfer auf *Ladeleistung* anlegen.
+- **Leistung:** aus den Strömen × 230 V berechnet, weil die Wallbox keine meldet. Daraus berechnet Home Assistant auch *Energie (berechnet)* in kWh.
 - **Limit:** wird als Strom je Phase am Fahrzeug gesetzt. Die Wallbox setzt es bei jedem Anstecken zurück und startet dann mit 6 A. Die Integration schreibt das Limit jedes Mal neu (das Maximum, solange *Leistungslimit* aus ist).
 - **Ladezustand** steht schon auf `active`, während das Auto auf die Freigabe wartet. Ob Strom fließt, zeigt *Lädt*.
 - **Fahrzeug:** wird nur für ein Auto gemeldet, das bei bestehender EEBUS-Verbindung angesteckt wurde.
