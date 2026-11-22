@@ -19,9 +19,9 @@ Home Assistant keeps its EEBUS certificate in `.storage/elli/`. Keep it: a new c
 
 | | Elli Charger 2 | First generation |
 |---|---|---|
-| Use cases | power limit (LPC), power measurement (MPC), state (EVSECC) | vehicle current limits (OPEV), vehicle measurements (EVCEM), vehicle and wallbox state (EVCC, EVSECC) |
-| Measurements | total power only | current per phase, no power, no energy |
-| Vehicle | not reported | reported once plugged in |
+| Use cases | power limit (LPC), power measurement (MPC), state (EVSECC); while a car is plugged in also vehicle current limits (OPEV), vehicle measurements (EVCEM), vehicle state (EVCC) | vehicle current limits (OPEV), vehicle measurements (EVCEM), vehicle and wallbox state (EVCC, EVSECC) |
+| Measurements | total power; while a car is plugged in also current and power per phase and the charged energy | current per phase, no power, no energy |
+| Vehicle | reported while plugged in | reported while plugged in |
 | Failsafe | power and duration | none |
 
 ## First generation

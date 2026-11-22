@@ -20,23 +20,23 @@ M = Elli Charger 2 über Modbus · E2 = Elli Charger 2 über EEBUS · E1 = erste
 | Ladeleistung | Sensor | W | ✅ | ✅ | ✅ ¹ |
 | Energie gesamt | Sensor | kWh, Zählerstand, für das Energie-Dashboard | ✅ | | |
 | Energie seit Neustart | Sensor | kWh | ✅ | | |
-| Energie | Sensor | kWh, nur wenn die Wallbox sie meldet | | ² | ² |
+| Energie | Sensor | geladene kWh, nur wenn die Wallbox sie meldet | | ✅ ² | ² |
 | Energie (berechnet) | Sensor | kWh, aus der *Ladeleistung* berechnet, für das Energie-Dashboard | | ✅ | ✅ |
-| Strom L1–L3 | Sensor | A | ✅ | | ✅ |
+| Strom L1–L3 | Sensor | A | ✅ | ✅ ⁴ | ✅ ⁴ |
 | Spannung L1–L3 | Sensor | V | ✅ | | |
 | Platinentemperatur | Sensor | °C, Diagnose | ✅ | | |
 
 ¹ Die erste Generation meldet keine Leistung. Sie wird aus den Strömen × 230 V berechnet.
-² Entsteht nur, wenn die Wallbox Energie meldet. Die bisher getesteten Wallboxen tun das nicht.
+² Entsteht nur, wenn die Wallbox Energie meldet. Die Elli Charger 2 tut das, solange ein Auto angesteckt ist, die erste Generation bisher nicht.
 
 ## Zustand
 
 | Entität | Typ | Werte | M | E2 | E1 |
 |---|---|---|---|---|---|
 | Ladestatus | Sensor | IEC 61851: A1 … F | ✅ | | |
-| Ladezustand | Sensor | active, paused, finished, error, unplugged | | | ✅ ³ |
-| Fahrzeug verbunden | Binärsensor | | ✅ | | ✅ ⁴ |
-| Lädt | Binärsensor | an = Strom fließt | ✅ | | ✅ ⁴ |
+| Ladezustand | Sensor | active, paused, finished, error, unplugged | | ✅ ³ ⁴ | ✅ ³ ⁴ |
+| Fahrzeug verbunden | Binärsensor | | ✅ | ✅ ⁴ | ✅ ⁴ |
+| Lädt | Binärsensor | an = Strom fließt | ✅ | ✅ ⁴ | ✅ ⁴ |
 | Störung | Binärsensor | | ✅ | ✅ | ✅ |
 | Betriebszustand | Sensor | Normalbetrieb, Standby, Fehler …, Diagnose | | ✅ | ✅ |
 | Aktive Stromgrenze | Sensor | A, die Grenze, die die Wallbox anwendet (kann unter dem Sollwert liegen: Temperatur, Lastmanagement, §14a) | ✅ | | |
@@ -44,7 +44,7 @@ M = Elli Charger 2 über Modbus · E2 = Elli Charger 2 über EEBUS · E1 = erste
 | EEBUS verbunden | Binärsensor | Diagnose | | ✅ | ✅ |
 
 ³ *Ladezustand* steht schon auf `active`, während das Auto auf die Freigabe wartet. Ob Strom fließt, zeigt *Lädt*.
-⁴ Erscheinen, sobald ein Auto bei bestehender EEBUS-Verbindung angesteckt wurde.
+⁴ Erscheinen, sobald ein Auto bei bestehender EEBUS-Verbindung angesteckt wurde. Die Wallbox meldet das Auto nur, solange es angesteckt ist.
 
 ## Wenn Home Assistant weg ist
 

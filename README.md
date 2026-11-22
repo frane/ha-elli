@@ -21,10 +21,10 @@ Control your **Elli** wallbox from Home Assistant, locally, without the cloud. T
 | Set charging speed | ✅ current, 6–16 A | ✅ power limit, W | ✅ power limit, W |
 | Charging power | ✅ measured | ✅ measured | ✅ calculated from the currents |
 | Energy (kWh) | ✅ total and since power on | ✅ calculated from the power | ✅ calculated from the power |
-| Current per phase | ✅ | – | ✅ |
+| Current per phase | ✅ | ✅ car plugged in | ✅ car plugged in |
 | Voltage per phase | ✅ | – | – |
-| Vehicle connected, charging | ✅ | – | ✅ |
-| Charging state | ✅ A1 … F | – | ✅ active, paused, finished … |
+| Vehicle connected, charging | ✅ | ✅ | ✅ |
+| Charging state | ✅ A1 … F | ✅ active, paused, finished … | ✅ active, paused, finished … |
 | Problem | ✅ | ✅ | ✅ |
 | Limit the wallbox applies | ✅ current | ✅ power | ✅ power |
 | PCB temperature | ✅ | – | – |

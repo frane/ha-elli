@@ -20,23 +20,23 @@ M = Elli Charger 2 over Modbus · E2 = Elli Charger 2 over EEBUS · E1 = first g
 | Charging power | sensor | W | ✅ | ✅ | ✅ ¹ |
 | Total energy | sensor | kWh, meter reading, for the Energy dashboard | ✅ | | |
 | Energy since power on | sensor | kWh | ✅ | | |
-| Energy | sensor | kWh, only if the wallbox reports it | | ² | ² |
+| Energy | sensor | kWh charged, only if the wallbox reports it | | ✅ ² | ² |
 | Energy (calculated) | sensor | kWh, calculated from *Charging power*, for the Energy dashboard | | ✅ | ✅ |
-| Current L1–L3 | sensor | A | ✅ | | ✅ |
+| Current L1–L3 | sensor | A | ✅ | ✅ ⁴ | ✅ ⁴ |
 | Voltage L1–L3 | sensor | V | ✅ | | |
 | PCB temperature | sensor | °C, diagnostic | ✅ | | |
 
 ¹ The first generation reports no power. It is calculated from the currents × 230 V.
-² Created only when the wallbox reports energy. The wallboxes tested so far do not.
+² Created only when the wallbox reports energy. The Elli Charger 2 does while a car is plugged in, the first generation so far does not.
 
 ## State
 
 | Entity | Type | Values | M | E2 | E1 |
 |---|---|---|---|---|---|
 | Charging state | sensor | IEC 61851: A1 … F | ✅ | | |
-| Charge state | sensor | active, paused, finished, error, unplugged | | | ✅ ³ |
-| Vehicle connected | binary sensor | | ✅ | | ✅ ⁴ |
-| Charging | binary sensor | on = current flows | ✅ | | ✅ ⁴ |
+| Charge state | sensor | active, paused, finished, error, unplugged | | ✅ ³ ⁴ | ✅ ³ ⁴ |
+| Vehicle connected | binary sensor | | ✅ | ✅ ⁴ | ✅ ⁴ |
+| Charging | binary sensor | on = current flows | ✅ | ✅ ⁴ | ✅ ⁴ |
 | Problem | binary sensor | | ✅ | ✅ | ✅ |
 | Operating state | sensor | normal operation, standby, failure …, diagnostic | | ✅ | ✅ |
 | Active current limit | sensor | A, the limit the wallbox applies (can be below the target: temperature, load management, §14a) | ✅ | | |
@@ -44,7 +44,7 @@ M = Elli Charger 2 over Modbus · E2 = Elli Charger 2 over EEBUS · E1 = first g
 | EEBUS connected | binary sensor | diagnostic | | ✅ | ✅ |
 
 ³ *Charge state* is already `active` while the car waits for authorization. *Charging* shows whether current flows.
-⁴ Appear once a car has been plugged in while EEBUS was connected.
+⁴ Appear once a car has been plugged in while EEBUS was connected. The wallbox reports the car only while it is plugged in.
 
 ## When Home Assistant is gone
 

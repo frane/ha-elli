@@ -19,9 +19,9 @@ Home Assistant legt sein EEBUS-Zertifikat unter `.storage/elli/` ab. Behalten: E
 
 | | Elli Charger 2 | Erste Generation |
 |---|---|---|
-| Use Cases | Leistungslimit (LPC), Leistungsmessung (MPC), Zustand (EVSECC) | Stromlimits am Fahrzeug (OPEV), Fahrzeug-Messwerte (EVCEM), Zustand von Fahrzeug und Wallbox (EVCC, EVSECC) |
-| Messwerte | nur Gesamtleistung | Strom je Phase, keine Leistung, keine Energie |
-| Fahrzeug | wird nicht gemeldet | wird gemeldet, sobald angesteckt |
+| Use Cases | Leistungslimit (LPC), Leistungsmessung (MPC), Zustand (EVSECC); solange ein Auto angesteckt ist auch Stromlimits am Fahrzeug (OPEV), Fahrzeug-Messwerte (EVCEM), Fahrzeugzustand (EVCC) | Stromlimits am Fahrzeug (OPEV), Fahrzeug-Messwerte (EVCEM), Zustand von Fahrzeug und Wallbox (EVCC, EVSECC) |
+| Messwerte | Gesamtleistung; solange ein Auto angesteckt ist auch Strom und Leistung je Phase und die geladene Energie | Strom je Phase, keine Leistung, keine Energie |
+| Fahrzeug | wird gemeldet, solange angesteckt | wird gemeldet, solange angesteckt |
 | Failsafe | Leistung und Dauer | keiner |
 
 ## Erste Generation
