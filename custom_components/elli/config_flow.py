@@ -76,8 +76,11 @@ async def _validate(data: dict[str, Any]) -> str | None:
     return None
 
 
+ENERGY_MANAGER = "energymanagementsystem"
+
+
 async def _async_discover(hass: HomeAssistant) -> list[ShipService]:
-    """Elli wallboxes announcing EEBUS (SHIP) on the network."""
+    """Every EEBUS (SHIP) node announced on the network."""
     try:
         zc = await async_get_zeroconf(hass)
         if zc is None:
@@ -91,11 +94,32 @@ async def _async_discover(hass: HomeAssistant) -> list[ShipService]:
     except Exception:  # noqa: BLE001
         _LOGGER.debug("EEBUS discovery failed", exc_info=True)
         return []
-    return [s for s in mdns.services.values() if s.brand.lower().startswith("elli")]
+    return list(mdns.services.values())
 
 
 def _service_host(service: ShipService) -> str:
     return service.addresses[0] if service.addresses else service.host
+
+
+def _manager_hosts(services: list[ShipService]) -> set[str]:
+    """Hosts that run an energy manager. A wallbox announced from one of them is a mirror
+    of the real wallbox (e.g. elli-eebus-proxy, which energy managers connect to instead)."""
+    return {
+        a.lower()
+        for s in services if s.device_type.lower() == ENERGY_MANAGER
+        for a in [*s.addresses, s.host] if a
+    }
+
+
+def _wallboxes(services: list[ShipService]) -> list[ShipService]:
+    """The Elli wallboxes among the announced EEBUS nodes."""
+    managers = _manager_hosts(services)
+    return [
+        s for s in services
+        if s.brand.lower().startswith("elli")
+        and s.device_type.lower() != ENERGY_MANAGER
+        and not {a.lower() for a in [*s.addresses, s.host] if a} & managers
+    ]
 
 
 def _unique_id(data: dict[str, Any]) -> str:
@@ -132,7 +156,7 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             str(e.data.get(CONF_HOST, "")).strip().lower() for e in self._async_current_entries()
         }
         self._found = [
-            s for s in await _async_discover(self.hass)
+            s for s in _wallboxes(await _async_discover(self.hass))
             if s.ski not in configured and _service_host(s).lower() not in configured
         ][:MAX_FOUND]
         if not self._found:
@@ -218,7 +242,9 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         props = discovery_info.properties
         ski = normalize_ski(str(props.get("ski", "")))
-        if not is_ski_valid(ski):
+        if not is_ski_valid(ski) or str(props.get("type", "")).lower() == ENERGY_MANAGER:
+            return self.async_abort(reason="not_supported")
+        if discovery_info.host.lower() in _manager_hosts(await _async_discover(self.hass)):
             return self.async_abort(reason="not_supported")
         return await self._async_discovered(
             discovery_info.host, discovery_info.port, ski, str(props.get("brand", "Elli"))

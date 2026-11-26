@@ -110,3 +110,44 @@ async def test_user_flow_found_first_generation(hass, socket_enabled):
         result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "found_0"})
     assert result["type"] is FlowResultType.FORM and result["step_id"] == "zeroconf_confirm"
+
+
+def _proxy(host: str = "10.0.0.5") -> list[ShipService]:
+    """elli-eebus-proxy: a mirror of the Elli for energy managers, and itself as energy manager."""
+    mirror = ShipService(name="Elli-EVSE-dae40731._ship._tcp.local.", ski="d" * 40, ship_id="Elli-Wallbox-1",
+                         host="proxy.local", addresses=[host], port=4711, brand="Elli", model="EVSE",
+                         device_type="Wallbox")
+    manager = ShipService(name="elli-eebus-proxy-4d6541c4._ship._tcp.local.", ski="e" * 40,
+                          ship_id="elli-eebus-proxy-4d6541c4", host="proxy.local", addresses=[host], port=4713,
+                          brand="elli-eebus-proxy", model="elli-eebus-proxy", device_type="EnergyManagementSystem")
+    return [mirror, manager]
+
+
+async def test_scan_skips_energy_managers_and_proxy_mirrors(hass):
+    with patch("custom_components.elli.config_flow._async_discover", return_value=[_service(), *_proxy()]):
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    assert result["type"] is FlowResultType.MENU and set(result["menu_options"]) == {"found_0", "manual"}
+    assert "127.0.0.1" in result["menu_options"]["found_0"]
+
+
+async def test_zeroconf_ignores_energy_managers_and_proxy_mirrors(hass):
+    proxy = ZeroconfServiceInfo(
+        ip_address=ip_address("10.0.0.5"), ip_addresses=[ip_address("10.0.0.5")], hostname="proxy.local.",
+        name="Elli-EVSE-dae40731._ship._tcp.local.", port=4711, type="_ship._tcp.local.",
+        properties={"txtvers": "1", "id": "Elli-Wallbox-1", "ski": "d" * 40, "brand": "Elli",
+                    "type": "Wallbox", "register": "false"},
+    )
+    with patch("custom_components.elli.config_flow._async_discover", return_value=_proxy()):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=proxy)
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "not_supported"
+
+    manager = ZeroconfServiceInfo(
+        ip_address=ip_address("10.0.0.5"), ip_addresses=[ip_address("10.0.0.5")], hostname="proxy.local.",
+        name="elli-eebus-proxy-4d6541c4._ship._tcp.local.", port=4713, type="_ship._tcp.local.",
+        properties={"txtvers": "1", "id": "elli-eebus-proxy-4d6541c4", "ski": "e" * 40,
+                    "brand": "elli-eebus-proxy", "type": "EnergyManagementSystem", "register": "false"},
+    )
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=manager)
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "not_supported"
