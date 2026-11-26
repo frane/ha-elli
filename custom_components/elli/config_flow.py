@@ -12,7 +12,7 @@ from pyeebus.ship import is_ski_valid, normalize_ski
 from pyeebus.ship.mdns import ShipMdns, ShipService
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector
@@ -152,8 +152,9 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Wallboxes found on the network first, manual setup as a fallback."""
-        configured = {e.unique_id for e in self._async_current_entries()} | {
-            str(e.data.get(CONF_HOST, "")).strip().lower() for e in self._async_current_entries()
+        entries = self._async_current_entries()
+        configured = {e.unique_id for e in entries} | {e.data.get(CONF_SKI) for e in entries} | {
+            str(e.data.get(CONF_HOST, "")).strip().lower() for e in entries
         }
         self._found = [
             s for s in _wallboxes(await _async_discover(self.hass))
@@ -165,6 +166,15 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
         options = {f"found_{i}": f"{s.brand.capitalize()} {s.model} ({_service_host(s)})".replace("  ", " ")
                    for i, s in enumerate(self._found)}
         return self.async_show_menu(step_id="user", menu_options={**options, "manual": manual})
+
+    def _entry_for(self, host: str | None = None, ski: str | None = None) -> ConfigEntry | None:
+        """The entry of this wallbox over either connection: same SKI, or same host."""
+        for entry in self._async_current_entries(include_ignore=False):
+            if ski and (entry.unique_id == ski or entry.data.get(CONF_SKI) == ski):
+                return entry
+            if host and str(entry.data.get(CONF_HOST, "")).strip().lower() == host.strip().lower():
+                return entry
+        return None
 
     async def async_step_manual(
         self, user_input: dict[str, Any] | None = None
@@ -200,6 +210,8 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             user_input[CONF_HOST] = user_input[CONF_HOST].strip()
             await self.async_set_unique_id(_unique_id(user_input))
             self._abort_if_unique_id_configured()
+            if self._entry_for(host=user_input[CONF_HOST]) is not None:
+                return self.async_abort(reason="already_configured")
             if (error := await _validate(user_input)) is None:
                 name = user_input.pop(CONF_NAME, DEFAULT_NAME)
                 return self.async_create_entry(
@@ -225,6 +237,8 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(ski)
                 self._abort_if_unique_id_configured()
+                if self._entry_for(host=user_input[CONF_HOST], ski=ski) is not None:
+                    return self.async_abort(reason="already_configured")
                 self._eebus = {
                     CONF_NAME: user_input.get(CONF_NAME, DEFAULT_NAME),
                     CONF_HOST: user_input[CONF_HOST].strip(),
@@ -255,8 +269,21 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         await self.async_set_unique_id(ski, raise_on_progress=not user)
         self._abort_if_unique_id_configured(updates={CONF_HOST: host})
-        # The same wallbox may already be set up over Modbus.
-        if any(str(e.data.get(CONF_HOST, "")).strip().lower() == host.lower() for e in self._async_current_entries()):
+        # The same wallbox may already be set up over Modbus: known by its SKI (it got a new
+        # address: follow it), or by its address (remember the SKI for the next time).
+        if (entry := self._entry_for(host=host, ski=ski)) is not None:
+            data = {**entry.data, CONF_SKI: ski}
+            changed = str(entry.data.get(CONF_HOST, "")).strip().lower() != host.lower()
+            if changed:
+                data[CONF_HOST] = host
+            if data != dict(entry.data):
+                self.hass.config_entries.async_update_entry(
+                    entry, data=data,
+                    unique_id=_unique_id(data) if changed and data.get(CONF_CONNECTION) == CONNECTION_MODBUS
+                    else entry.unique_id,
+                )
+                if changed:
+                    self.hass.config_entries.async_schedule_reload(entry.entry_id)
             return self.async_abort(reason="already_configured")
         self._eebus = {
             CONF_NAME: DEFAULT_NAME,
@@ -310,7 +337,7 @@ class ElliConfigFlow(ConfigFlow, domain=DOMAIN):
             if (error := await _validate(self._modbus)) is None:
                 return self.async_create_entry(
                     title=user_input[CONF_NAME],
-                    data={CONF_CONNECTION: CONNECTION_MODBUS, **self._modbus},
+                    data={CONF_CONNECTION: CONNECTION_MODBUS, **self._modbus, CONF_SKI: self._eebus[CONF_SKI]},
                 )
             errors["base"] = error
         return self.async_show_form(

@@ -12,7 +12,16 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
-from custom_components.elli.const import CONF_CONNECTION, CONF_UNIT_ID, CONNECTION_MODBUS, DOMAIN
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.elli.const import (
+    CONF_CONNECTION,
+    CONF_SKI,
+    CONF_UNIT_ID,
+    CONNECTION_EEBUS,
+    CONNECTION_MODBUS,
+    DOMAIN,
+)
 
 SKI = "a" * 40
 
@@ -50,7 +59,8 @@ async def test_user_flow_offers_found_wallboxes_and_modbus(hass, sim):
         assert result["type"] is FlowResultType.FORM and result["step_id"] == "zeroconf_modbus"
         result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_NAME: "Garage"})
     assert result["type"] is FlowResultType.CREATE_ENTRY and result["title"] == "Garage"
-    assert result["data"] == {CONF_CONNECTION: CONNECTION_MODBUS, CONF_HOST: "127.0.0.1", CONF_PORT: port, CONF_UNIT_ID: 1}
+    assert result["data"] == {CONF_CONNECTION: CONNECTION_MODBUS, CONF_HOST: "127.0.0.1", CONF_PORT: port,
+                              CONF_UNIT_ID: 1, CONF_SKI: SKI}
     entry = result["result"]
 
     # set up already: neither the scan nor zeroconf offer it again
@@ -151,3 +161,49 @@ async def test_zeroconf_ignores_energy_managers_and_proxy_mirrors(hass):
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=manager)
     assert result["type"] is FlowResultType.ABORT and result["reason"] == "not_supported"
+
+
+def _modbus_entry(hass, host: str = "127.0.0.1", ski: str | None = None) -> MockConfigEntry:
+    data = {CONF_CONNECTION: CONNECTION_MODBUS, CONF_HOST: host, CONF_PORT: 502, CONF_UNIT_ID: 1}
+    if ski:
+        data[CONF_SKI] = ski
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=f"{host}:502:1", data=data)
+    entry.add_to_hass(hass)
+    return entry
+
+
+async def test_modbus_wallbox_found_again_learns_its_ski(hass):
+    entry = _modbus_entry(hass)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=_zeroconf())
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
+    assert entry.data[CONF_SKI] == SKI
+
+
+async def test_modbus_wallbox_with_a_new_address_is_followed(hass):
+    entry = _modbus_entry(hass, host="10.0.0.9", ski=SKI)
+    with patch.object(hass.config_entries, "async_schedule_reload") as reload:
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=_zeroconf("127.0.0.2"))
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "127.0.0.2" and entry.unique_id == "127.0.0.2:502:1"
+    reload.assert_called_once_with(entry.entry_id)
+
+
+async def test_manual_setup_refuses_the_other_connection_of_a_configured_wallbox(hass):
+    _modbus_entry(hass)
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "eebus"})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_NAME: "Elli", CONF_HOST: "127.0.0.1", CONF_PORT: 4711, CONF_SKI: SKI})
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
+
+
+async def test_manual_modbus_refused_for_a_wallbox_on_eebus(hass):
+    MockConfigEntry(domain=DOMAIN, unique_id=SKI, data={
+        CONF_CONNECTION: CONNECTION_EEBUS, CONF_HOST: "127.0.0.1", CONF_PORT: 4711, CONF_SKI: SKI}).add_to_hass(hass)
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "modbus"})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_NAME: "Elli", CONF_HOST: "127.0.0.1", CONF_PORT: 502, CONF_UNIT_ID: 1})
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
