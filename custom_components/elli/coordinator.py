@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import CONF_UNIT_ID, DEFAULT_SCAN_INTERVAL, DOMAIN
@@ -27,6 +28,11 @@ class ElliCoordinator(DataUpdateCoordinator[ChargerStatus]):
     is on, every poll therefore writes the current Home Assistant wants back to
     register 261. That also undoes a failsafe the wallbox fell into: once tripped,
     it reports the failsafe current in 261 until something writes again.
+
+    An energy manager limiting the wallbox over EEBUS (e.g. a pause, 0 A) shows in
+    261 as well. So what Home Assistant wants is remembered across restarts instead
+    of being read back from 261: a pause of the energy manager must not become
+    Home Assistant's own setting, which the watchdog would then keep writing.
     """
 
     config_entry: ElliConfigEntry
@@ -49,8 +55,12 @@ class ElliCoordinator(DataUpdateCoordinator[ChargerStatus]):
         self.target_current: float | None = None
         # Whether Home Assistant wants charging allowed; None until the first poll.
         self.charging_wanted: bool | None = None
+        self._store: Store[dict] = Store(hass, 1, f"{DOMAIN}.{entry.entry_id}")
 
     async def _async_setup(self) -> None:
+        if stored := await self._store.async_load():
+            self.charging_wanted = stored.get("charging_wanted")
+            self.target_current = stored.get("target_current")
         try:
             self.info = await self.charger.read_info()
         except ModbusError as err:
@@ -61,10 +71,13 @@ class ElliCoordinator(DataUpdateCoordinator[ChargerStatus]):
             status = await self.charger.read_status()
         except ModbusError as err:
             raise UpdateFailed(f"Error reading wallbox: {err}") from err
-        if self.target_current is None:
-            self.target_current = status.current_limit or self.info.max_current
-        if self.charging_wanted is None:
-            self.charging_wanted = status.charging_allowed
+        if self.target_current is None or self.charging_wanted is None:
+            # first start: take over what the wallbox does now, and remember it
+            if self.target_current is None:
+                self.target_current = status.current_limit or self.info.max_current
+            if self.charging_wanted is None:
+                self.charging_wanted = status.charging_allowed
+            self._save()
         if status.watchdog_timeout:
             status = await self._feed_watchdog(status)
         return status
@@ -95,7 +108,16 @@ class ElliCoordinator(DataUpdateCoordinator[ChargerStatus]):
 
     @property
     def charging_enabled(self) -> bool:
+        """Whether Home Assistant allows charging (an energy manager may still pause it)."""
+        if self.charging_wanted is not None:
+            return self.charging_wanted
         return bool(self.data and self.data.charging_allowed)
+
+    def _wanted(self) -> dict:
+        return {"charging_wanted": self.charging_wanted, "target_current": self.target_current}
+
+    def _save(self) -> None:
+        self._store.async_delay_save(self._wanted, 1)
 
     async def _call(self, coro) -> None:
         try:
@@ -112,13 +134,15 @@ class ElliCoordinator(DataUpdateCoordinator[ChargerStatus]):
         self.target_current = amps
         if self.charging_wanted is None:
             self.charging_wanted = self.charging_enabled
-        if self.charging_enabled:
+        await self._store.async_save(self._wanted())
+        if self.charging_wanted:
             await self._call(self.charger.set_current(amps))
         else:
             self.async_update_listeners()
 
     async def async_set_charging(self, enabled: bool) -> None:
         self.charging_wanted = enabled
+        await self._store.async_save(self._wanted())
         if enabled:
             await self._call(
                 self.charger.set_current(self.target_current or self.info.max_current)

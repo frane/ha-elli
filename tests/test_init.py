@@ -231,3 +231,21 @@ async def test_no_writes_while_the_watchdog_is_off(hass, setup_entry, sim):
     wallbox.writes.clear()
     await setup_entry.runtime_data.async_refresh()
     assert wallbox.writes == []
+
+
+async def test_a_pause_of_the_energy_manager_survives_no_restart(hass, setup_entry, sim):
+    """An energy manager pausing over EEBUS shows as 0 A in 261. After a restart, Home Assistant
+    must not take that over as its own setting (it would keep writing 0 and block charging)."""
+    wallbox, _ = sim
+    await hass.services.async_call(
+        "switch", "turn_on", {"entity_id": "switch.elli_wallbox_charging_enabled"}, blocking=True)
+    await hass.async_block_till_done()
+
+    wallbox.holding[261] = 0  # the energy manager pauses
+    assert await hass.config_entries.async_reload(setup_entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert _state(hass, "switch.elli_wallbox_charging_enabled") == "on"
+    wallbox.writes.clear()
+    await setup_entry.runtime_data.async_refresh()
+    assert wallbox.writes == [(261, 160)], "Home Assistant still allows charging"

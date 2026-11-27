@@ -53,4 +53,5 @@ Eine Automation, die *Ladestrom* und *Laden freigegeben* anhand der Netzleistung
 | „Keine Verbindung“ bei der Einrichtung | Ist der Modbus-Server an? Stimmt die IP? Sind Home Assistant und Wallbox im selben Netz? |
 | „Die Wallbox antwortet, aber nicht mit den erwarteten Registern“ | Firmware älter als R03.004.045.121 oder falsche Modbus-ID |
 | Laden stoppt nach einer Weile von selbst | Home Assistant war länger als der Watchdog-Timeout nicht erreichbar, deshalb galt der Failsafe-Strom. Versionen vor 0.1.1 lösten ihn auch im Normalbetrieb aus: aktualisieren |
+| Bleibt auf 0 A, nachdem ein Energiemanager das Laden über EEBUS pausiert hat | Versionen vor 0.1.10 übernahmen die Pause nach einem Neustart als eigene Einstellung und schrieben weiter 0: aktualisieren, dann *Laden aktiviert* einmal einschalten |
 | Strom niedriger als eingestellt | Die eigenen Grenzen der Wallbox gelten; siehe *Aktive Stromgrenze* |

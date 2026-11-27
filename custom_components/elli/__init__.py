@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 
-from .const import CONF_CONNECTION, CONNECTION_EEBUS
+from .const import CONF_CONNECTION, CONNECTION_EEBUS, DOMAIN
 from .coordinator import ElliConfigEntry, ElliCoordinator
 from .eebus import EebusCoordinator
 
@@ -41,3 +42,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ElliConfigEntry) -> boo
 
 async def _async_reload(hass: HomeAssistant, entry: ElliConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ElliConfigEntry) -> None:
+    """Forget what Home Assistant wanted from this wallbox (charging on/off, current)."""
+    await Store(hass, 1, f"{DOMAIN}.{entry.entry_id}").async_remove()

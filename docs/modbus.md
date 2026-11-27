@@ -53,4 +53,5 @@ An automation that sets *Charging current* and *Charging enabled* from your grid
 | "Cannot connect" during setup | Is the Modbus server on? Is the IP correct? Are Home Assistant and the wallbox on the same network? |
 | "Wallbox answers, but not with the expected registers" | Firmware older than R03.004.045.121, or wrong Modbus ID |
 | Charging stops by itself after a while | Home Assistant was unreachable longer than the watchdog timeout, so the failsafe current applied. Versions before 0.1.1 also tripped it during normal operation: update |
+| Stays at 0 A after an energy manager paused charging over EEBUS | Versions before 0.1.10 took the pause over as their own setting after a restart and kept writing 0: update, then switch *Charging enabled* on once |
 | Current is lower than set | The wallbox's own limits apply; see *Active current limit* |
