@@ -84,4 +84,4 @@ pip install -r requirements_test.txt
 pytest
 ```
 
-*Not affiliated with Elli or Volkswagen Group Charging GmbH.*
+*Not affiliated with Elli or Volkswagen Group Charging GmbH. Elli and the Elli logo are trademarks of their respective owner; the logo is used only to identify the supported wallboxes.*
